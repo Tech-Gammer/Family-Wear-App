@@ -31,7 +31,7 @@ class _ShowItemPageState extends State<ShowItemPage> {
           return Card(
             margin: EdgeInsets.all(10),
             child: Column(
-              children: [
+              children: [//gjhgjg
                 SizedBox(
                   height: 200,
                   child: PageView.builder(
