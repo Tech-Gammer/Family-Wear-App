@@ -1,0 +1,2 @@
+C:/Users/SufyanButt/StudioProjects/family_wear_app/android/app/.cxx/Debug/551f405y/arm64-v8a/CMakeFiles/edit_cache.dir
+C:/Users/SufyanButt/StudioProjects/family_wear_app/android/app/.cxx/Debug/551f405y/arm64-v8a/CMakeFiles/rebuild_cache.dir
