@@ -4,6 +4,7 @@ import 'package:family_wear_app/1_Auth/Intro/Intro_Providers/Login_Provider.dart
 import 'package:family_wear_app/1_Auth/Intro/Intro_Providers/Profile_Provider.dart';
 import 'package:family_wear_app/5_Admin/AdminHomePages/Category_Management/addCategory_Provider.dart';
 import 'package:family_wear_app/5_Admin/AdminHomePages/Item_Managment/addItem_provider.dart';
+import 'package:family_wear_app/5_Admin/AdminHomePages/Slider_Management/showSlider_Provider.dart';
 import 'package:family_wear_app/6_Customer/2_CustomerProviders/HomeTabScreen_Provider.dart';
 import 'package:family_wear_app/raaf_Page.dart';
 import 'package:flutter/material.dart';
@@ -18,6 +19,7 @@ import '5_Admin/1_AdminHomeScreen.dart';
 import '5_Admin/AdminHomePages/Category_Management/showCategory_Provider.dart';
 import '5_Admin/AdminHomePages/Item_Managment/ShowItem_Provider.dart';
 import '5_Admin/AdminHomePages/Item_Managment/Show_items.dart';
+import '5_Admin/AdminHomePages/Slider_Management/addSlider_Provider.dart';
 import '6_Customer/2_CustomerProviders/Category_Provider.dart';
 import '6_Customer/2_CustomerProviders/GNav_bar_Provider.dart';
 import '6_Customer/2_CustomerProviders/Item_Provider.dart';
@@ -54,9 +56,11 @@ void main() async {
         ChangeNotifierProvider(create: (_) => ProfileProvider()),
         ChangeNotifierProvider(create: (_) => UserProvider()),
         ChangeNotifierProvider(create: (_) => AddCategoryProvider()),
-        ChangeNotifierProvider(create: (_) => ShowCategoryProvider()),
+        //ChangeNotifierProvider(create: (_) => ShowCategoryProvider()),
         ChangeNotifierProvider(create: (_) => AddItemProvider()),
         ChangeNotifierProvider(create: (_) => ShowItemProvider()),
+        ChangeNotifierProvider(create: (_) => AddSliderImageProvider()),
+        ChangeNotifierProvider(create: (_) => ShowSliderProvider()),
       ],
       child:  MyApp(
         isLoggedIn: isLoggedIn,

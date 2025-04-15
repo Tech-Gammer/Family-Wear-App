@@ -51,6 +51,7 @@ dependencies:
   firebase_messaging:
   google_nav_bar:
   carousel_slider:
+  smooth_page_indicator:
   path_provider: ^2.1.5
 
 

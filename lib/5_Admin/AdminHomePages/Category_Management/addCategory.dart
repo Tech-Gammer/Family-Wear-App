@@ -18,7 +18,7 @@ class _AddCategoryState extends State<AddCategory> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Add Category', style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: AppColors.primaryColor,
+        //backgroundColor: AppColors.primaryColor,
         centerTitle: true,
       ),
       body: SingleChildScrollView(

@@ -58,7 +58,6 @@ class AddItemProvider extends ChangeNotifier {
   }
 }
 */
-
 import 'dart:io';
 import 'package:family_wear_app/ip_address.dart';
 import 'package:flutter/material.dart';
@@ -70,6 +69,11 @@ class AddItemProvider extends ChangeNotifier {
   final ImagePicker _picker = ImagePicker();
   List<File> _images = [];
   String? _selectedCategory;
+  List<Map<String, dynamic>> _categories = []; // Stores categories
+
+  String? _selectedUnit;
+  List<Map<String, dynamic>> _quantitUnit = []; // Stores categories
+
 
   final TextEditingController itemNameController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
@@ -79,9 +83,65 @@ class AddItemProvider extends ChangeNotifier {
   final TextEditingController taxPriceController = TextEditingController();
   final TextEditingController netPriceController = TextEditingController();
   final TextEditingController minQuantityController = TextEditingController();
+  //final TextEditingController minQuantityController = TextEditingController();
 
   List<File> get images => _images;
   String? get selectedCategory => _selectedCategory;
+  List<Map<String, dynamic>> get categories => _categories;
+
+  String? get selectedUnit => _selectedUnit;
+  List<Map<String, dynamic>> get quantityUnit => _quantitUnit;
+
+  // Fetch categories from backend
+  Future<void> fetchCategories() async {
+    var url = Uri.parse("http://${NetworkConfig().ipAddress}:5000/categories"); // Change if needed
+    try {
+      var response = await http.get(url);
+      if (response.statusCode == 200) {
+        List data = json.decode(response.body);
+        _categories = data.map((category) => {
+          "id": category["category_id"],
+          "name": category["category_name"]
+        }).toList();
+        notifyListeners();
+      }
+    } catch (e) {
+      print("Error fetching categories: $e");
+    }
+  }
+
+  Future<void> fetchUnits() async {
+    var url = Uri.parse("http://${NetworkConfig().ipAddress}:5000/get-units");
+
+    try {
+      var response = await http.get(url);
+      if (response.statusCode == 200) {
+        List data = json.decode(response.body);
+        _quantitUnit = data.map((unit) => {
+          "id": unit["unit_id"],
+          "name": unit["unit_name"]
+        }).toList();
+        notifyListeners();
+      } else {
+        print("Failed to fetch units. Status Code: ${response.statusCode}");
+      }
+    } catch (e) {
+      print("Error fetching units: $e");
+    }
+  }
+
+  void setUnit(String? unit) {
+    if (unit == null) return;
+    _selectedUnit = unit;
+    notifyListeners();
+  }
+
+  // Select Category
+  void setCategory(String? category) {
+    _selectedCategory = category;
+    notifyListeners();
+  }
+
 
   Future<void> pickImages() async {
     final List<XFile>? selectedImages = await _picker.pickMultiImage();
@@ -100,7 +160,7 @@ class AddItemProvider extends ChangeNotifier {
   }
 
   Future<void> uploadItem(BuildContext context) async {
-    if (itemNameController.text.isEmpty || salePriceController.text.isEmpty) {
+    if (itemNameController.text.isEmpty || salePriceController.text.isEmpty || _selectedCategory == null || _selectedUnit == null) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please fill all required fields")));
       return;
     }
@@ -108,9 +168,22 @@ class AddItemProvider extends ChangeNotifier {
     var uri = Uri.parse("http://${NetworkConfig().ipAddress}:5000/addItem");
     var request = http.MultipartRequest("POST", uri);
 
+    // Find selected category ID
+    var selectedCategoryId = _categories.firstWhere(
+          (cat) => cat["name"] == _selectedCategory,
+      orElse: () => {"id": null},
+    )["id"];
+
+    var selectedUnitId = _quantitUnit.firstWhere(
+          (cat) => cat["name"] == _selectedUnit,
+      orElse: () => {"id": null},
+    )["id"];
+
     //request.fields["category_id"] = "1";
     //request.fields["unit_id"] = "1";
     request.fields["item_name"] = itemNameController.text;
+    request.fields["category_id"] = selectedCategoryId.toString();
+    request.fields["unit_id"] = selectedUnitId.toString();
     request.fields["item_description"] = descriptionController.text;
     request.fields["purchase_price"] = purchasePriceController.text;
     request.fields["sale_price"] = salePriceController.text;
@@ -123,12 +196,40 @@ class AddItemProvider extends ChangeNotifier {
       request.files.add(await http.MultipartFile.fromPath('item_images', image.path));
     }
 
-    var response = await request.send();
-
-    if (response.statusCode == 201) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Item added successfully!")));
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Failed to add item.")));
+    try {
+      var response = await request.send();
+      if (response.statusCode == 201) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Item Added Successfully!")),
+        );
+        clearForm();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Failed to add item!")),
+        );
+      }
+    } catch (e) {
+      print("Error: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: $e")),
+      );
     }
+
+  }
+
+  // Clear All Fields After Upload
+  void clearForm() {
+    itemNameController.clear();
+    descriptionController.clear();
+    purchasePriceController.clear();
+    salePriceController.clear();
+    taxPercentController.clear();
+    taxPriceController.clear();
+    netPriceController.clear();
+    minQuantityController.clear();
+    _images.clear();
+    _selectedCategory = null;
+    _selectedUnit = null; // Fixed: Reset _selectedUnit as well
+    notifyListeners();
   }
 }

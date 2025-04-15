@@ -143,14 +143,12 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                   ),
 
                   // Terms & Conditions
-/*
-                  Consumer<CreateAccountProvider>(
+                  /*Consumer<CreateAccountProvider>(
                     builder: (context, provider, child) {
                       return _buildTermsAndConditions(context, screenWidth, screenHeight, provider);
                     },
-                  ),
-*/
-                  //TermsAndConditionsPage(screenWidth: screenWidth, screenHeight: screenHeight,),
+                  ),*/
+                  TermsAndConditionsPage(screenWidth: screenWidth, screenHeight: screenHeight,),
 
                   // Submit Button
                   SizedBox(height: screenHeight * 0.02),

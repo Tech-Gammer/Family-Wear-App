@@ -3,12 +3,16 @@ import 'dart:ui';
 import 'package:family_wear_app/5_Admin/AdminHomePages/Category_Management/addCategory.dart';
 import 'package:family_wear_app/5_Admin/AdminHomePages/Category_Management/showCategory.dart';
 import 'package:family_wear_app/5_Admin/AdminHomePages/Item_Managment/add_item.dart';
+import 'package:family_wear_app/5_Admin/AdminHomePages/Unit_Managment/add_unit.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import '../1_Auth/Intro/2_Create_Account_Page/register_page.dart';
 import '../2_Assets/Colors/Colors_Scheme.dart';
+import '../raaf3.dart';
 import 'AdminHomePages/Item_Managment/Show_items.dart';
+import 'AdminHomePages/Slider_Management/addSlider.dart';
+import 'AdminHomePages/Slider_Management/showSlider.dart';
+import 'AdminHomePages/Unit_Managment/show_unit.dart';
 
 class AdminHomeScreen extends StatelessWidget {
   @override
@@ -112,7 +116,8 @@ class AdminHomeScreen extends StatelessWidget {
       child: Scaffold(
         appBar: AppBar(
           title: Text('Admin Home', style: TextStyle(fontWeight: FontWeight.bold)),
-          backgroundColor: AppColors.primaryColor,
+          centerTitle: true,
+          //backgroundColor: AppColors.primaryColor,
         ),
         drawer: Drawer(
           child: ListView(
@@ -122,17 +127,17 @@ class AdminHomeScreen extends StatelessWidget {
               buildListTile(Icons.dashboard, 'Dashboard', () => Navigator.push(context, MaterialPageRoute(builder: (context) => AdminHomeScreen()))),
               buildListTile(Icons.shopping_cart, 'Order Management', () {} ),
               buildSectionTitle('Item Management'),
-              buildListTile(Icons.add, 'Add Item', ()=> Navigator.push(context, MaterialPageRoute(builder: (context) => AddItemPage()))),
+              buildListTile(Icons.add, 'Add Item', ()=> Navigator.push(context, MaterialPageRoute(builder: (context) => AddItem()))),
               buildListTile(Icons.list, 'Show Items', () => Navigator.push(context, MaterialPageRoute(builder: (context) => ShowItemPage()))),
               buildSectionTitle('Category Management'),
               buildListTile(Icons.add, 'Add Category', () => Navigator.push(context, MaterialPageRoute(builder: (context) => AddCategory()))),
               buildListTile(Icons.list, 'Show Categories', () => Navigator.push(context, MaterialPageRoute(builder: (context) => ShowCategories()))),
               buildSectionTitle('Slider Management'),
-              buildListTile(Icons.add, 'Add Slider', () {}),
-              buildListTile(Icons.list, 'Show Sliders', () {}),
+              buildListTile(Icons.add, 'Add Slider', () => Navigator.push(context, MaterialPageRoute(builder: (context) => UploadImageScreen()))),
+              buildListTile(Icons.list, 'Show Sliders', () => Navigator.push(context, MaterialPageRoute(builder: (context) => ShowSliderScreen()))),
               buildSectionTitle('Units Management'),
-              buildListTile(Icons.add, 'Add Units', () {}),
-              buildListTile(Icons.list, 'Show Units', () {}),
+              buildListTile(Icons.add, 'Add Units', ()=> Navigator.push(context, MaterialPageRoute(builder: (context) => AddUnitPage()))),
+              buildListTile(Icons.list, 'Show Units', () => Navigator.push(context, MaterialPageRoute(builder: (context) => ShowUnitPage()))),
               buildSectionTitle('Notification Management'),
               buildListTile(Icons.add, 'Add Notification', () {}),
               buildListTile(Icons.list, 'Show Notifications', () {}),
@@ -148,11 +153,11 @@ class AdminHomeScreen extends StatelessWidget {
               padding: EdgeInsets.all(10),
               crossAxisCount: crossAxisCount,
               children: [
-                buildCard('Orders', Icons.shopping_cart, () {}),
-                buildCard('Products', Icons.inventory, () {} ),
-                buildCard('Categories', Icons.category, () {}),
-                buildCard('Sliders', Icons.slideshow, () {}),
-                buildCard('Units', Icons.widgets, (){}),
+                buildCard('Orders', Icons.shopping_cart, () => Navigator.push(context, MaterialPageRoute(builder: (context) => UserProfileScreen()))),
+                buildCard('Products', Icons.inventory, () => Navigator.push(context, MaterialPageRoute(builder: (context) => ShowItemPage()))),
+                buildCard('Categories', Icons.category, () => Navigator.push(context, MaterialPageRoute(builder: (context) => ShowCategories()))),
+                buildCard('Sliders', Icons.slideshow, () => Navigator.push(context, MaterialPageRoute(builder: (context) => ShowSliderScreen()))),
+                buildCard('Units', Icons.widgets, () => Navigator.push(context, MaterialPageRoute(builder: (context) => ShowUnitPage()))),
                 buildCard('Notifications', Icons.notifications, (){} ),
               ],
             );
