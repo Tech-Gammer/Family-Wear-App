@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../1_Auth/Intro/2_Create_Account_Page/register_page.dart';
 import '../2_Assets/Colors/Colors_Scheme.dart';
+import '../6_Customer/HomeScreen.dart';
 import '../raaf3.dart';
 import 'AdminHomePages/Item_Managment/Show_items.dart';
 import 'AdminHomePages/Slider_Management/addSlider.dart';
@@ -142,6 +143,7 @@ class AdminHomeScreen extends StatelessWidget {
               buildListTile(Icons.add, 'Add Notification', () {}),
               buildListTile(Icons.list, 'Show Notifications', () {}),
               Divider(),
+              buildListTile(Icons.list, 'Go To Customer Side', () => Navigator.push(context, MaterialPageRoute(builder: (context) => HomeScreen()))),
               buildListTile(Icons.exit_to_app, 'Logout', () => _showLogoutDialog(context), color: Colors.red),
             ],
           ),

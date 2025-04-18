@@ -1,6 +1,10 @@
+import 'dart:convert';
+
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:family_wear_app/2_Assets/Colors/Colors_Scheme.dart';
 import 'package:provider/provider.dart';
+import '../../../5_Admin/AdminHomePages/Slider_Management/showSlider_Provider.dart';
 import '../../2_CustomerProviders/Category_Provider.dart';
 import '../../2_CustomerProviders/HomeScrollProvider.dart';
 import '../../2_CustomerProviders/HomeTabScreen_Provider.dart';
@@ -16,6 +20,20 @@ class HomeTabScreen extends StatefulWidget {
 }
 
 class _HomeTabScreenState extends State<HomeTabScreen> {
+
+  late PageController _pageController;
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(viewportFraction: 0.85);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<ShowSliderProvider>(context, listen: false).fetchSliderImages();
+      Provider.of<CategoryProvider>(context, listen: false).fetchCategories();
+    });
+  }
+
+
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -28,22 +46,9 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
     final categories = Provider.of<CategoryProvider>(context).categories;
     final items = Provider.of<ItemProvider>(context).items;
     final userProvider = Provider.of<UserProvider>(context);
+    final sliderProvider = Provider.of<ShowSliderProvider>(context);
 
 
-    final isLoading = false; // Change this to true to simulate a loading state
-
-
-    // List of images
-    final List<String> images = [
-      "asset/shopping.jpg",
-      "asset/shopping1.jpg",
-      "asset/shopping3.jpg",
-      "asset/q2.png",
-      "asset/q3.png",
-    ];
-
-
-    // Responsive sizes
     double baseFontSize = 11;
     double responsiveFontSize = baseFontSize * (screenWidth / 375);
 
@@ -181,53 +186,55 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                 ),
                 SizedBox(height: screenHeight * 0.015),
 
-                // Horizontal Scrollable Banner
-                SizedBox(
-                  height: screenHeight * 0.2,
-                  width: screenWidth,
-                  child: PageView.builder(
-                    controller: pageController, // Use the custom PageController
-                    onPageChanged: (index) {
-                      scrollProvider.updatePage(index); // Update the provider
-                    },
-                    itemCount: images.length,
-                    itemBuilder: (context, index) {
-                      return Transform.scale(
-                        scale: scrollProvider.currentPage == index ? 1.0 : 1.0, // Slight scaling for the active image
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 8.0),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            image: DecorationImage(
-                              image: AssetImage(images[index]),
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                SizedBox(height: screenHeight * 0.01),
+                // CarouselSlider(
+                //   options: CarouselOptions(
+                //     height: screenHeight * 0.2,
+                //     aspectRatio: 16/9,
+                //     viewportFraction: 0.85,
+                //     autoPlay: true,
+                //     onPageChanged: (index, reason) {
+                //       Provider.of<HorizontalScrollProvider>(context, listen: false)
+                //           .updatePage(index);
+                //     },
+                //   ),
+                //   items: images.map((image) {
+                //     return Builder(
+                //       builder: (BuildContext context) {
+                //         return Container(
+                //           margin: EdgeInsets.symmetric(horizontal: 8.0),
+                //           decoration: BoxDecoration(
+                //             borderRadius: BorderRadius.circular(12),
+                //             image: DecorationImage(
+                //               image: AssetImage(image),
+                //               fit: BoxFit.cover,
+                //             ),
+                //           ),
+                //         );
+                //       },
+                //     );
+                //   }).toList(),
+                // ),
+                // SizedBox(height: screenHeight * 0.01),
+                // // Dots Indicator
+                // Row(
+                //   mainAxisAlignment: MainAxisAlignment.center,
+                //   children: List.generate(images.length, (index) {
+                //     return AnimatedContainer(
+                //       duration: const Duration(milliseconds: 300),
+                //       margin: const EdgeInsets.symmetric(horizontal: 4.0),
+                //       height: 8,
+                //       width: scrollProvider.currentPage == index ? 16 : 8,
+                //       decoration: BoxDecoration(
+                //         color: scrollProvider.currentPage == index
+                //             ? AppColors.primaryColor
+                //             : Colors.grey,
+                //         borderRadius: BorderRadius.circular(4),
+                //       ),
+                //     );
+                //   }),
+                // ),
+                _buildImageSlider(screenHeight, sliderProvider, scrollProvider),
 
-                // Dots Indicator
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(images.length, (index) {
-                    return AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
-                      margin: const EdgeInsets.symmetric(horizontal: 4.0),
-                      height: 8,
-                      width: scrollProvider.currentPage == index ? 16 : 8,
-                      decoration: BoxDecoration(
-                        color: scrollProvider.currentPage == index
-                            ? AppColors.primaryColor
-                            : Colors.grey,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    );
-                  }),
-                ),
 
                 SizedBox(height: screenHeight * 0.005),
 
@@ -242,56 +249,105 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
 
                 SizedBox(height: screenHeight * 0.015),
 
-                SizedBox(
-                  height: screenHeight * 0.12,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: categories.length,
-                    itemBuilder: (context, index) {
-                      final category = categories[index];
-                      return Padding(
-                        padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.025),
-                        child: Column(
-                          children: [
-                            Container(
-                              height: screenHeight * 0.07,
-                              width: screenHeight * 0.07,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.rectangle,
-                                borderRadius: BorderRadius.circular(10),
-                                image: DecorationImage(
-                                  image: AssetImage(category.icon),
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                            ),
-
-                            /*Container(
-                              height: screenHeight * 0.07,
-                              width: screenHeight * 0.07,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                image: DecorationImage(
-                                  image: AssetImage(category.icon),
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                            ),*/
-
-                            SizedBox(height: screenHeight * 0.005),
-                            Text(
-                              category.name,
-                              style: TextStyle(fontSize: screenHeight * 0.015),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                ),
+                // SizedBox(
+                //   height: screenHeight * 0.12,
+                //   child: ListView.builder(
+                //     scrollDirection: Axis.horizontal,
+                //     itemCount: categories.length,
+                //     itemBuilder: (context, index) {
+                //       final category = categories[index];
+                //       return Padding(
+                //         padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.025),
+                //         child: Column(
+                //           children: [
+                //             Container(
+                //               height: screenHeight * 0.07,
+                //               width: screenHeight * 0.07,
+                //               decoration: BoxDecoration(
+                //                 shape: BoxShape.rectangle,
+                //                 borderRadius: BorderRadius.circular(10),
+                //                 image: DecorationImage(
+                //                   image: AssetImage(category.icon),
+                //                   fit: BoxFit.cover,
+                //                 ),
+                //               ),
+                //             ),
+                //
+                //             /*Container(
+                //               height: screenHeight * 0.07,
+                //               width: screenHeight * 0.07,
+                //               decoration: BoxDecoration(
+                //                 shape: BoxShape.circle,
+                //                 image: DecorationImage(
+                //                   image: AssetImage(category.icon),
+                //                   fit: BoxFit.cover,
+                //                 ),
+                //               ),
+                //             ),*/
+                //
+                //             SizedBox(height: screenHeight * 0.005),
+                //             Text(
+                //               category.name,
+                //               style: TextStyle(fontSize: screenHeight * 0.015),
+                //             ),
+                //           ],
+                //         ),
+                //       );
+                //     },
+                //   ),
+                // ),
                 //SizedBox(height: screenHeight * 0.0),
 
                 // Items Section
+                // Update the categories section in build()
+                Consumer<CategoryProvider>(
+                  builder: (context, categoryProvider, _) {
+                    if (categoryProvider.isLoading) {
+                      return Center(child: CircularProgressIndicator());
+                    }
+
+                    if (categoryProvider.error.isNotEmpty) {
+                      return Center(child: Text('Error: ${categoryProvider.error}'));
+                    }
+
+                    return SizedBox(
+                      height: screenHeight * 0.12,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: categoryProvider.categories.length,
+                        itemBuilder: (context, index) {
+                          final category = categoryProvider.categories[index];
+                          return Padding(
+                            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.025),
+                            child: Column(
+                              children: [
+                                Container(
+                                  height: screenHeight * 0.07,
+                                  width: screenHeight * 0.07,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.rectangle,
+                                    borderRadius: BorderRadius.circular(10),
+                                    image: DecorationImage(
+                                      image: category.imageBytes.isNotEmpty
+                                          ? MemoryImage(category.imageBytes)
+                                          : AssetImage("asset/placeholder.png") as ImageProvider,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(height: screenHeight * 0.005),
+                                Text(
+                                  category.name,
+                                  style: TextStyle(fontSize: screenHeight * 0.015),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    );
+                  },
+                ),
                 Text(
                   "Popular Items",
                   style: TextStyle(
@@ -320,144 +376,142 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // Image Section
-                                Stack(
-                                  children: [
-                                    Container(
-                                      height: screenHeight * 0.2,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Image Section
+                              Stack(
+                                children: [
+                                  Container(
+                                    height: screenHeight * 0.2,
+                                    decoration: BoxDecoration(
+                                      borderRadius: const BorderRadius.only(
+                                        topLeft: Radius.circular(12),
+                                        topRight: Radius.circular(12),
+                                      ),
+                                      image: DecorationImage(
+                                        image: AssetImage(item.image),
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                  ),
+                                  // Optional: Add a gradient overlay for text readability
+                                  Positioned.fill(
+                                    child: Container(
                                       decoration: BoxDecoration(
                                         borderRadius: const BorderRadius.only(
                                           topLeft: Radius.circular(12),
                                           topRight: Radius.circular(12),
                                         ),
-                                        image: DecorationImage(
-                                          image: AssetImage(item.image),
-                                          fit: BoxFit.cover,
+                                        gradient: LinearGradient(
+                                          colors: [
+                                            Colors.black.withOpacity(0.2),
+                                            Colors.black.withOpacity(0.0),
+                                          ],
+                                          begin: Alignment.topCenter,
+                                          end: Alignment.bottomCenter,
                                         ),
                                       ),
                                     ),
-                                    // Optional: Add a gradient overlay for text readability
-                                    Positioned.fill(
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          borderRadius: const BorderRadius.only(
-                                            topLeft: Radius.circular(12),
-                                            topRight: Radius.circular(12),
-                                          ),
-                                          gradient: LinearGradient(
-                                            colors: [
-                                              Colors.black.withOpacity(0.2),
-                                              Colors.black.withOpacity(0.0),
-                                            ],
-                                            begin: Alignment.topCenter,
-                                            end: Alignment.bottomCenter,
+                                  ),
+                                ],
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 1),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // Row for Name and Price
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        // Item Name
+                                        Expanded(
+                                          child: Text(
+                                            item.name,
+                                            overflow: TextOverflow.ellipsis, // Handle text overflow
+                                            maxLines: 1, // Limit to a single line
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: screenHeight * 0.015,
+                                            ),
                                           ),
                                         ),
+                                        SizedBox(height: screenHeight * 0.005),
+                                        // Price
+                                        Text(
+                                          item.price,
+                                          textAlign: TextAlign.right,
+                                          style: TextStyle(
+                                            color: Colors.green,
+                                            fontSize: screenHeight * 0.015,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    SizedBox(height: screenHeight * 0.0005),
+                                    // Item Description
+                                    Text(
+                                      item.description,
+                                      overflow: TextOverflow.ellipsis, // Handle text overflow
+                                      maxLines: 1, // Limit description to 2 lines
+                                      style: TextStyle(
+                                        color: Colors.grey,
+                                        fontSize: screenHeight * 0.015,
                                       ),
+                                    ),
+
+                                    SizedBox(height: screenHeight * 0.0005),
+                                    // Row for Item Sold and Rating
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        // Sold Items
+                                        Text(
+                                          '${item.soldItem} Sold',
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 1,
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: isDarkTheme ? AppColors.lightBackgroundColor : AppColors.darkTextColor,
+                                            fontSize: screenHeight * 0.01,
+                                          ),
+                                        ),
+
+                                        // Rating Stars
+                                        Row(
+                                          children: List.generate(5, (index) {
+                                            if (index < item.rating.floor()) {
+                                              // Full star
+                                              return Icon(
+                                                Icons.star,
+                                                color: Colors.orange,
+                                                size: screenHeight * 0.015,
+                                              );
+                                            } else if (index < item.rating) {
+                                              // Half star
+                                              return Icon(
+                                                Icons.star_half,
+                                                color: Colors.orange,
+                                                size: screenHeight * 0.015,
+                                              );
+                                            } else {
+                                              // Empty star
+                                              return Icon(
+                                                Icons.star_border,
+                                                color: Colors.orange,
+                                                size: screenHeight * 0.015,
+                                              );
+                                            }
+                                          }),
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 ),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 1),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      // Row for Name and Price
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          // Item Name
-                                          Expanded(
-                                            child: Text(
-                                              item.name,
-                                              overflow: TextOverflow.ellipsis, // Handle text overflow
-                                              maxLines: 1, // Limit to a single line
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: screenHeight * 0.015,
-                                              ),
-                                            ),
-                                          ),
-                                          SizedBox(height: screenHeight * 0.005),
-                                          // Price
-                                          Text(
-                                            item.price,
-                                            textAlign: TextAlign.right,
-                                            style: TextStyle(
-                                              color: Colors.green,
-                                              fontSize: screenHeight * 0.015,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      SizedBox(height: screenHeight * 0.0005),
-                                      // Item Description
-                                      Text(
-                                        item.description,
-                                        overflow: TextOverflow.ellipsis, // Handle text overflow
-                                        maxLines: 1, // Limit description to 2 lines
-                                        style: TextStyle(
-                                          color: Colors.grey,
-                                          fontSize: screenHeight * 0.015,
-                                        ),
-                                      ),
-                                                    
-                                      SizedBox(height: screenHeight * 0.0005),
-                                      // Row for Item Sold and Rating
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          // Sold Items
-                                          Text(
-                                            '${item.soldItem} Sold',
-                                            overflow: TextOverflow.ellipsis,
-                                            maxLines: 1,
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: isDarkTheme ? AppColors.lightBackgroundColor : AppColors.darkTextColor,
-                                              fontSize: screenHeight * 0.01,
-                                            ),
-                                          ),
-                                                    
-                                          // Rating Stars
-                                          Row(
-                                            children: List.generate(5, (index) {
-                                              if (index < item.rating.floor()) {
-                                                // Full star
-                                                return Icon(
-                                                  Icons.star,
-                                                  color: Colors.orange,
-                                                  size: screenHeight * 0.015,
-                                                );
-                                              } else if (index < item.rating) {
-                                                // Half star
-                                                return Icon(
-                                                  Icons.star_half,
-                                                  color: Colors.orange,
-                                                  size: screenHeight * 0.015,
-                                                );
-                                              } else {
-                                                // Empty star
-                                                return Icon(
-                                                  Icons.star_border,
-                                                  color: Colors.orange,
-                                                  size: screenHeight * 0.015,
-                                                );
-                                              }
-                                            }),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                         ),
 
@@ -510,7 +564,78 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
         ),
       ),
     );
+
   }
+  Widget _buildImageSlider(double screenHeight, ShowSliderProvider sliderProvider, HorizontalScrollProvider scrollProvider) {
+    return Column(
+      children: [
+        // Slider Container
+        SizedBox(
+          height: screenHeight * 0.2,
+          child: sliderProvider.sliderImages.isEmpty
+              ? Center(child: CircularProgressIndicator()) // Loading state
+              : CarouselSlider(
+            options: CarouselOptions(
+              height: screenHeight * 0.2,
+              aspectRatio: 16 / 9,
+              viewportFraction: 0.85,
+              autoPlay: true,
+              onPageChanged: (index, reason) {
+                scrollProvider.updatePage(index);
+              },
+            ),
+            items: sliderProvider.sliderImages.map((image) {
+              return Builder(
+                builder: (BuildContext context) {
+                  return Container(
+                    margin: EdgeInsets.symmetric(horizontal: 8.0),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      image: DecorationImage(
+                        image: MemoryImage(base64Decode(image['image'])),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  );
+                },
+              );
+            }).toList(),
+          ),
+        ),
+        SizedBox(height: screenHeight * 0.01),
+
+        // Dots Indicator
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(
+            sliderProvider.sliderImages.length,
+                (index) {
+              return AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                margin: const EdgeInsets.symmetric(horizontal: 4.0),
+                height: 8,
+                width: scrollProvider.currentPage == index ? 16 : 8,
+                decoration: BoxDecoration(
+                  color: scrollProvider.currentPage == index
+                      ? AppColors.primaryColor
+                      : Colors.grey,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose(); // Don't forget to dispose the controller
+    super.dispose();
+  }
+
+
 }
 
 

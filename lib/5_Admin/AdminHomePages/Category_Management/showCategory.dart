@@ -102,7 +102,7 @@ class _ShowCategoriesState extends State<ShowCategories> {
           crossAxisCount: 2, // Two items per row
           crossAxisSpacing: 10,
           mainAxisSpacing: 10,
-          childAspectRatio: 1.2, // Aspect ratio for each grid item
+          childAspectRatio: 1.1, // Aspect ratio for each grid item
         ),
         padding: EdgeInsets.all(10),
         itemCount: categories.length,
