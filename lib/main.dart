@@ -20,6 +20,7 @@ import '5_Admin/AdminHomePages/Category_Management/showCategory_Provider.dart';
 import '5_Admin/AdminHomePages/Item_Managment/ShowItem_Provider.dart';
 import '5_Admin/AdminHomePages/Item_Managment/Show_items.dart';
 import '5_Admin/AdminHomePages/Slider_Management/addSlider_Provider.dart';
+import '6_Customer/1_MainScreen/Cart_Screen/Cart_provider.dart';
 import '6_Customer/2_CustomerProviders/Category_Provider.dart';
 import '6_Customer/2_CustomerProviders/GNav_bar_Provider.dart';
 import '6_Customer/2_CustomerProviders/Item_Provider.dart';
@@ -39,7 +40,14 @@ void main() async {
   final prefs = await SharedPreferences.getInstance();
   final isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
   final role = prefs.getInt('role') ?? -1; // -1 means not logged in
+  final userId = prefs.getString('user_id'); // Get user ID
 
+  final cartProvider = CartProvider();
+
+  // If user is logged in, initialize cart with user ID
+  if (isLoggedIn && userId != null) {
+    await cartProvider.initialize(userId);
+  }
   runApp(
     MultiProvider(
       providers: [
@@ -57,64 +65,22 @@ void main() async {
         ChangeNotifierProvider(create: (_) => UserProvider()),
         ChangeNotifierProvider(create: (_) => AddCategoryProvider()),
         //ChangeNotifierProvider(create: (_) => ShowCategoryProvider()),
+        // ChangeNotifierProvider(create: (_) => CartProvider()),
         ChangeNotifierProvider(create: (_) => AddItemProvider()),
         ChangeNotifierProvider(create: (_) => ShowItemProvider()),
         ChangeNotifierProvider(create: (_) => AddSliderImageProvider()),
         ChangeNotifierProvider(create: (_) => ShowSliderProvider()),
+        ChangeNotifierProvider<CartProvider>(create: (_) => cartProvider), // Inject preloaded provider
+
       ],
       child:  MyApp(
         isLoggedIn: isLoggedIn,
         role: role,
       ),
+
     ),
   );
 }
-
-/*
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final themeProvider = Provider.of<ThemeProvider>(context);
-
-    return MaterialApp(
-      title: 'Family Wear',
-      theme: AppThemes.lightTheme,
-      darkTheme: AppThemes.darkTheme,
-      themeMode: themeProvider.themeMode,
-      debugShowCheckedModeBanner: false,
-      home: FutureBuilder(
-        future: checkLoginStatus(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return SplashScreen();
-          } else {
-            if (snapshot.hasData && snapshot.data != null) {
-              final userRole = snapshot.data!['role'];
-              if (userRole == 0) {
-                return AdminHomeScreen();
-              } else if (userRole == 1) {
-                return HomeTabScreen();
-              } else {
-                return FirstScreen();
-              }
-            } else {
-              return FirstScreen();
-            }
-          }
-        },
-      ),
-    );
-  }
-
-  Future<Map<String, dynamic>> checkLoginStatus() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? userData = prefs.getString('userData');
-    if (userData != null) {
-      return json.decode(userData);
-    }
-    return {};
-  }
-}*/
 
 class MyApp extends StatelessWidget {
   final bool isLoggedIn;
@@ -145,7 +111,6 @@ class MyApp extends StatelessWidget {
       case 2:
         return HomeScreen(); // Moderator
       default:
-        //return Raaf(); // Unknown role, show default page
         return FirstScreen(); // Not logged in
     }
   }

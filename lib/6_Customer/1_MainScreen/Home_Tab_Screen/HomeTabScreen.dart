@@ -1,35 +1,123 @@
 import 'dart:convert';
-
+import 'package:family_wear_app/5_Admin/AdminHomePages/Item_Managment/ShowItem_Provider.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:family_wear_app/2_Assets/Colors/Colors_Scheme.dart';
 import 'package:provider/provider.dart';
 import '../../../5_Admin/AdminHomePages/Slider_Management/showSlider_Provider.dart';
+import '../../../ip_address.dart';
 import '../../2_CustomerProviders/Category_Provider.dart';
 import '../../2_CustomerProviders/HomeScrollProvider.dart';
 import '../../2_CustomerProviders/HomeTabScreen_Provider.dart';
 import '../../2_CustomerProviders/Item_Provider.dart';
 import '../../2_CustomerProviders/Search_Provider.dart';
+import '../Cart_Screen/CartScreen.dart';
+import '../Cart_Screen/Cart_provider.dart';
 import '../Cart_Screen/item_GeneralCard.dart';
+import 'package:http/http.dart' as http;
+
 
 class HomeTabScreen extends StatefulWidget {
-  HomeTabScreen({super.key});
+  const HomeTabScreen({super.key});
 
   @override
   State<HomeTabScreen> createState() => _HomeTabScreenState();
 }
 
 class _HomeTabScreenState extends State<HomeTabScreen> {
-
+  int? userId;
   late PageController _pageController;
   @override
   void initState() {
     super.initState();
+
     _pageController = PageController(viewportFraction: 0.85);
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      userId = userProvider.userId; // Assuming you have userId in UserProvider
       Provider.of<ShowSliderProvider>(context, listen: false).fetchSliderImages();
       Provider.of<CategoryProvider>(context, listen: false).fetchCategories();
+      Provider.of<ShowItemProvider>(context, listen: false).fetchItems(); // Add this
+      Provider.of<ItemProvider>(context, listen: false).loadFavorites(userId.toString());
     });
+
+  }
+
+
+  void _addToCart(BuildContext context, dynamic itemData) {
+    final cartProvider = Provider.of<CartProvider>(context, listen: false);
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+
+    // Get required data
+    String userId = userProvider.userId.toString();
+    String itemId = itemData['item_id'].toString();
+
+    // First add to local cart (for immediate UI update)
+    Map<String, dynamic> item = {};
+    itemData.forEach((key, value) {
+      item[key.toString()] = value;
+    });
+
+    List<dynamic> imageList = [];
+    if (item['item_image'] != null) {
+      if (item['item_image'] is List) {
+        imageList = item['item_image'];
+      }
+    }
+
+    final cartItem = CartItem(
+      userId: userId,
+      itemId: itemId,
+      title: item['item_name']?.toString() ?? 'Unknown Item',
+      category: item['category_id']?.toString() ?? '0',
+      price: double.tryParse(item['net_price']?.toString() ?? '0.0') ?? 0.0,
+      imageUrl: imageList.isNotEmpty
+          ? 'http://${NetworkConfig().ipAddress}:5000/uploads/${imageList[0]}'
+          : 'https://via.placeholder.com/150',
+    );
+
+    cartProvider.addToCart(cartItem);
+
+    // Then send to backend
+    _addToCartBackend(userId, itemId);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('${cartItem.title} added to cart'),
+        duration: Duration(seconds: 2),
+        action: SnackBarAction(
+          label: 'VIEW CART',
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => CartScreen()),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+// New method to handle API call
+  Future<void> _addToCartBackend(String userId, String itemId) async {
+    try {
+      final response = await http.post(
+        Uri.parse('http://${NetworkConfig().ipAddress}:5000/add-to-cart'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'user_id': userId,
+          'item_id': itemId,
+        }),
+      );
+
+      if (response.statusCode != 200) {
+        print('Error adding to cart: ${response.body}');
+        // You might want to handle this error in the UI as well
+      }
+    } catch (e) {
+      print('Exception when adding to cart: $e');
+      // Handle network errors
+    }
   }
 
 
@@ -44,7 +132,8 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
     final scrollProvider = Provider.of<HorizontalScrollProvider>(context);
     final PageController pageController = PageController(viewportFraction: 0.85);
     final categories = Provider.of<CategoryProvider>(context).categories;
-    final items = Provider.of<ItemProvider>(context).items;
+    // final items = Provider.of<ItemProvider>(context).items;
+    final items = Provider.of<ShowItemProvider>(context).items; // Add
     final userProvider = Provider.of<UserProvider>(context);
     final sliderProvider = Provider.of<ShowSliderProvider>(context);
 
@@ -62,34 +151,32 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
 
-                // Header Section: Profile and Notification Icon
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Row(
                       children: [
-                        CircleAvatar(
-                          radius: screenHeight * 0.03,
-                          //backgroundImage: AssetImage("asset/sufyan.jpg"),
-                          backgroundImage: userProvider.imageUrl.isNotEmpty
-                              ? NetworkImage(userProvider.imageUrl)
-                              : AssetImage("asset/wallet.jpg") as ImageProvider,
-                        ),
+                        // CircleAvatar(
+                        //   radius: screenHeight * 0.03,
+                        //   backgroundImage: userProvider.imageUrl.isNotEmpty
+                        //       ? NetworkImage(userProvider.imageUrl)
+                        //       : AssetImage("asset/wallet.jpg") as ImageProvider,
+                        // ),
                         SizedBox(width: screenWidth * 0.03),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              "Muhammad Sufyan",
-                              //userProvider.name,
+                              userProvider.name.isNotEmpty
+                                  ? userProvider.name
+                                  : "Guest User",
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: responsiveFontSize * 1.4,
                               ),
                             ),
                             Text(
-                              "user_id",
-                              //userProvider.email,
+                              "ID: ${userProvider.userId ?? 'N/A'}",
                               style: TextStyle(
                                 color: Colors.grey,
                                 fontSize: responsiveFontSize * 1.1,
@@ -186,53 +273,6 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                 ),
                 SizedBox(height: screenHeight * 0.015),
 
-                // CarouselSlider(
-                //   options: CarouselOptions(
-                //     height: screenHeight * 0.2,
-                //     aspectRatio: 16/9,
-                //     viewportFraction: 0.85,
-                //     autoPlay: true,
-                //     onPageChanged: (index, reason) {
-                //       Provider.of<HorizontalScrollProvider>(context, listen: false)
-                //           .updatePage(index);
-                //     },
-                //   ),
-                //   items: images.map((image) {
-                //     return Builder(
-                //       builder: (BuildContext context) {
-                //         return Container(
-                //           margin: EdgeInsets.symmetric(horizontal: 8.0),
-                //           decoration: BoxDecoration(
-                //             borderRadius: BorderRadius.circular(12),
-                //             image: DecorationImage(
-                //               image: AssetImage(image),
-                //               fit: BoxFit.cover,
-                //             ),
-                //           ),
-                //         );
-                //       },
-                //     );
-                //   }).toList(),
-                // ),
-                // SizedBox(height: screenHeight * 0.01),
-                // // Dots Indicator
-                // Row(
-                //   mainAxisAlignment: MainAxisAlignment.center,
-                //   children: List.generate(images.length, (index) {
-                //     return AnimatedContainer(
-                //       duration: const Duration(milliseconds: 300),
-                //       margin: const EdgeInsets.symmetric(horizontal: 4.0),
-                //       height: 8,
-                //       width: scrollProvider.currentPage == index ? 16 : 8,
-                //       decoration: BoxDecoration(
-                //         color: scrollProvider.currentPage == index
-                //             ? AppColors.primaryColor
-                //             : Colors.grey,
-                //         borderRadius: BorderRadius.circular(4),
-                //       ),
-                //     );
-                //   }),
-                // ),
                 _buildImageSlider(screenHeight, sliderProvider, scrollProvider),
 
 
@@ -365,10 +405,12 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                     crossAxisCount: 2,
                     crossAxisSpacing: 16,
                     mainAxisSpacing: 16,
-                    childAspectRatio: 3 / 4,
+                    // childAspectRatio: 2.8/ 4,
+                    childAspectRatio: 2.8/ 5, // Adjusted to make room for the button
                   ),
                   itemBuilder: (context, index) {
                     final item = items[index];
+                    final images = (item['item_image'] as List<dynamic>).cast<String>();
                     return Stack(
                       children: [
                         Card(
@@ -390,12 +432,16 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                                         topRight: Radius.circular(12),
                                       ),
                                       image: DecorationImage(
-                                        image: AssetImage(item.image),
+                                        image: NetworkImage(
+                                            images.isNotEmpty
+                                                ? images[0]
+                                                : 'https://via.placeholder.com/150' // Fallback URL
+                                        ),
                                         fit: BoxFit.cover,
                                       ),
                                     ),
                                   ),
-                                  // Optional: Add a gradient overlay for text readability
+                                  // Gradient Overlay (Optional)
                                   Positioned.fill(
                                     child: Container(
                                       decoration: BoxDecoration(
@@ -417,132 +463,148 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                                 ],
                               ),
                               Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 1),
+                                padding: const EdgeInsets.all(8.0),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    // Row for Name and Price
+                                    // Name and Price
                                     Row(
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
-                                        // Item Name
                                         Expanded(
                                           child: Text(
-                                            item.name,
-                                            overflow: TextOverflow.ellipsis, // Handle text overflow
-                                            maxLines: 1, // Limit to a single line
+                                            item['item_name'] ?? 'No Name',
+                                            overflow: TextOverflow.ellipsis,
                                             style: TextStyle(
                                               fontWeight: FontWeight.bold,
-                                              fontSize: screenHeight * 0.015,
+                                              fontSize: screenHeight * 0.016,
                                             ),
                                           ),
                                         ),
-                                        SizedBox(height: screenHeight * 0.005),
-                                        // Price
                                         Text(
-                                          item.price,
-                                          textAlign: TextAlign.right,
+                                          "${item['net_price']} PKR",
                                           style: TextStyle(
                                             color: Colors.green,
-                                            fontSize: screenHeight * 0.015,
+                                            fontSize: screenHeight * 0.016,
                                             fontWeight: FontWeight.w600,
                                           ),
                                         ),
                                       ],
                                     ),
-                                    SizedBox(height: screenHeight * 0.0005),
-                                    // Item Description
+                                    SizedBox(height: 4),
+                                    // Description
                                     Text(
-                                      item.description,
-                                      overflow: TextOverflow.ellipsis, // Handle text overflow
-                                      maxLines: 1, // Limit description to 2 lines
+                                      item['item_description'] ?? 'No Description',
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
                                       style: TextStyle(
                                         color: Colors.grey,
-                                        fontSize: screenHeight * 0.015,
+                                        fontSize: screenHeight * 0.014,
                                       ),
                                     ),
-
-                                    SizedBox(height: screenHeight * 0.0005),
-                                    // Row for Item Sold and Rating
+                                    SizedBox(height: 4),
+                                    // Available Quantity and Rating Stars in the same row
                                     Row(
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
-                                        // Sold Items
-                                        Text(
-                                          '${item.soldItem} Sold',
-                                          overflow: TextOverflow.ellipsis,
-                                          maxLines: 1,
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            color: isDarkTheme ? AppColors.lightBackgroundColor : AppColors.darkTextColor,
-                                            fontSize: screenHeight * 0.01,
-                                          ),
-                                        ),
-
                                         // Rating Stars
                                         Row(
-                                          children: List.generate(5, (index) {
-                                            if (index < item.rating.floor()) {
-                                              // Full star
-                                              return Icon(
-                                                Icons.star,
-                                                color: Colors.orange,
-                                                size: screenHeight * 0.015,
-                                              );
-                                            } else if (index < item.rating) {
-                                              // Half star
-                                              return Icon(
-                                                Icons.star_half,
-                                                color: Colors.orange,
-                                                size: screenHeight * 0.015,
-                                              );
-                                            } else {
-                                              // Empty star
-                                              return Icon(
-                                                Icons.star_border,
-                                                color: Colors.orange,
-                                                size: screenHeight * 0.015,
-                                              );
-                                            }
-                                          }),
+                                          children: [
+                                            Icon(Icons.star, color: Colors.orange, size: screenHeight * 0.015),
+                                            Icon(Icons.star, color: Colors.orange, size: screenHeight * 0.015),
+                                            Icon(Icons.star, color: Colors.orange, size: screenHeight * 0.015),
+                                            Icon(Icons.star_border, color: Colors.orange, size: screenHeight * 0.015),
+                                            Icon(Icons.star_border, color: Colors.orange, size: screenHeight * 0.015),
+                                          ],
+                                        ),
+                                        // Available Quantity
+                                        Text(
+                                          "${item['minimum_qty']} Available",
+                                          style: TextStyle(
+                                            fontSize: screenHeight * 0.013,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
                                       ],
+                                    ),
+                                    SizedBox(height: 8),
+
+                                    // Add to Cart Button
+                                    SizedBox(
+                                      width: double.infinity,
+                                      child: ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: AppColors.primaryColor,
+                                          padding: const EdgeInsets.symmetric(vertical: 8),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          elevation: 0,
+                                        ),
+                                        onPressed: () {
+                                          // Call function to add item to cart
+                                          _addToCart(context, item);
+                                        },
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Icon(
+                                              Icons.shopping_cart,
+                                              color: Colors.white,
+                                              size: screenHeight * 0.018,
+                                            ),
+                                            SizedBox(width: 4),
+                                            Text(
+                                              "Add to Cart",
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: screenHeight * 0.013,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
                                     ),
                                   ],
                                 ),
                               ),
+
                             ],
                           ),
                         ),
-
                         // Favorite Icon with Curved Background and Border
                         Positioned(
                           top: 0,
                           right: 0,
                           child: Consumer<ItemProvider>(
                             builder: (context, itemProvider, child) {
+                              final itemId = item['item_id']?.toString() ?? '';
+                              final isFavorite = itemProvider.favoriteItems.contains(itemId);
+
                               return GestureDetector(
-                                onTap: () => itemProvider.toggleFavorite(index), // Toggle favorite state
+                                onTap: () => itemProvider.toggleFavorite(itemId, userId.toString()),
                                 child: Stack(
                                   children: [
-                                    // Outer Clip for the Border
                                     ClipPath(
                                       clipper: TopRightCurveClipper(),
                                       child: Container(
-                                        color: Colors.green, // Border color
-                                        padding: const EdgeInsets.all(10), // Padding to create a border effect
+                                        color: Colors.green,
+                                        padding: const EdgeInsets.all(10),
                                       ),
                                     ),
-
-                                    // Inner Clip for the Icon Background
                                     ClipPath(
                                       clipper: TopRightCurveClipper(),
                                       child: Container(
-                                        color: item.isFavorite ? AppColors.primaryColor : AppColors.lightBackgroundColor, // Dynamic background color
-                                        padding: const EdgeInsets.all(8), // Padding for the icon
+                                        color: isFavorite
+                                            ? AppColors.primaryColor
+                                            : AppColors.lightBackgroundColor,
+                                        padding: const EdgeInsets.all(8),
                                         child: Icon(
-                                          item.isFavorite ? Icons.favorite : Icons.favorite_border,
-                                          color: item.isFavorite ? AppColors.lightBackgroundColor : Colors.black,
+                                          isFavorite ? Icons.favorite : Icons.favorite_border,
+                                          color: isFavorite
+                                              ? AppColors.lightBackgroundColor
+                                              : Colors.black,
                                           size: screenHeight * 0.03,
                                         ),
                                       ),
@@ -566,6 +628,7 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
     );
 
   }
+
   Widget _buildImageSlider(double screenHeight, ShowSliderProvider sliderProvider, HorizontalScrollProvider scrollProvider) {
     return Column(
       children: [
@@ -634,24 +697,19 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
     _pageController.dispose(); // Don't forget to dispose the controller
     super.dispose();
   }
-
-
 }
 
 
 class TopRightCurveClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
-    Path path = Path();
-    path.lineTo(size.width - 20, 0); // Straight line to near top-right corner
-    path.arcToPoint(
-      Offset(size.width, 20), // Arc to create a curve
-      radius: Radius.circular(20),
-      clockwise: true,
-    );
-    path.lineTo(size.width, size.height); // Straight line down
-    path.lineTo(0, size.height); // Bottom-left corner
-    path.close(); // Close the path
+    final path = Path();
+    path.moveTo(size.width * 0.7, 0);
+    path.quadraticBezierTo(size.width, 0, size.width, size.height * 0.3);
+    path.lineTo(size.width, size.height);
+    path.lineTo(0, size.height);
+    path.lineTo(0, 0);
+    path.close();
     return path;
   }
 

@@ -21,7 +21,7 @@ class HomeScreen extends StatelessWidget {
     final List<Widget> screens = [
       HomeTabScreen(),
       WishlistScreen(),
-      Raaf(),
+      CartScreen(),
       ProfileScreen(),
     ];
 

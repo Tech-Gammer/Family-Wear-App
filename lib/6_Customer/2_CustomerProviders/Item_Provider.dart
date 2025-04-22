@@ -1,4 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import '../../ip_address.dart';
 
 class Item {
   final String image;
@@ -13,20 +16,52 @@ class Item {
 }
 
 class ItemProvider with ChangeNotifier {
-  final List<Item> _items = [
-    Item(image: 'asset/ring.jpg', name: 'Stylish Ring', price: 'PKR5,060', description: 'A beautifully crafted ring perfect for any occasion.', soldItem: '700+', rating: 4.0),
-    Item(image: 'asset/shoes.jpg', name: 'Shoes', price: 'PKR120', description: 'Comfortable and stylish shoes for everyday wear.', soldItem: "250+", rating: 5.0),
-    Item(image: 'asset/watch.jpg', name: 'Watches', price: 'PKR80', description: 'Elegant wristwatches with a modern design.', soldItem: '300+', rating: 3.7),
-    Item(image: 'asset/wallet.jpg', name: 'Men Wallets', price: 'PKR40', description: 'Durable leather wallets with a sleek look.', soldItem: '1000+', rating: 4.2),
-    Item(image: 'asset/wallet.jpg', name: 'Men Wallets', price: 'PKR40', description: 'Durable leather wallets with a sleek look.', soldItem: '1000+', rating: 4.2),
-    Item(image: 'asset/wallet.jpg', name: 'Men Wallets', price: 'PKR40', description: 'Durable leather wallets with a sleek look.', soldItem: '1000+', rating: 4.2),
-  ];
+  Set<String> favoriteItems = {};
+  final String apiUrl = "http://${NetworkConfig().ipAddress}:5000";
 
-  List<Item> get items => _items;
+  Future<void> toggleFavorite(String itemId, String userId) async {
+    try {
+      final isCurrentlyFavorite = favoriteItems.contains(itemId);
+      final url = isCurrentlyFavorite
+          ? '$apiUrl/remove-from-wishlist'
+          : '$apiUrl/add-to-wishlist';
 
-  void toggleFavorite(int index) {
-    _items[index].isFavorite = !_items[index].isFavorite;
-    notifyListeners();
+      final response = await http.post(
+        Uri.parse(url),
+        body: json.encode({
+          'user_id': userId,
+          'item_id': itemId,
+        }),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        if (isCurrentlyFavorite) {
+          favoriteItems.remove(itemId);
+        } else {
+          favoriteItems.add(itemId);
+        }
+        notifyListeners();
+      }
+    } catch (error) {
+      print('Wishlist error: $error');
+    }
+  }
+
+  Future<void> loadFavorites(String userId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$apiUrl/get-wishlist?user_id=$userId'),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        favoriteItems = Set<String>.from(data['wishlist']);
+        notifyListeners();
+      }
+    } catch (error) {
+      print('Error loading favorites: $error');
+    }
   }
 
 }

@@ -18,16 +18,45 @@ class ProfileProvider with ChangeNotifier {
   File? _profileImageFile;
   final TextEditingController nameController = TextEditingController();
   final TextEditingController phoneNumberController = TextEditingController();
+  bool _isLoading = false;
 
   NetworkConfig config = NetworkConfig();
-
-  //String ip_address = "192.168.100.179";
 
 
   // Getters
   String? get gender => _gender;
   String? get profileImageUrl => _profileImageUrl;
   File? get profileImageFile => _profileImageFile;
+
+  // Initialize profile data
+  Future<void> initializeProfile(int userId) async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+
+      final response = await http.get(
+        Uri.parse('http://${config.ipAddress}:5000/user/$userId'),
+      );
+
+      if (response.statusCode == 200) {
+        final userData = jsonDecode(response.body);
+        // nameController.text = userData['name'] ?? '';
+        // phoneNumberController.text = userData['phone_no'] ?? '';
+        nameController.text = userData['name']?.toString() ?? '';
+        phoneNumberController.text = userData['phone_no']?.toString() ?? '';
+
+        _gender = userData['gender'];
+        _profileImageUrl = userData['user_image'] != null
+            ? 'http://${config.ipAddress}:5000/uploads/${userData['user_image']}'
+            : null;
+      }
+    } catch (e) {
+      throw Exception('Failed to load profile: ${e.toString()}');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
 
   // Setters
   void setGender(String value) {
@@ -65,96 +94,169 @@ class ProfileProvider with ChangeNotifier {
 
   // Upload image to the server
   Future<void> uploadImage() async {
-    if (_profileImageFile == null) {
-      throw Exception("Please select an image first.");
-    }
-    var request = http.MultipartRequest(
-      "POST",
-      Uri.parse("http://${config.ipAddress}:5000/upload"),
-    );
+    if (_profileImageFile == null) return;
 
-    request.files.add(
-      await http.MultipartFile.fromPath("user_image", _profileImageFile!.path),
-    );
-
-    var response = await request.send();
-
-    if (response.statusCode == 200) {
-      var responseBody = await response.stream.bytesToString();
-      _profileImageUrl = jsonDecode(responseBody)['imageUrl'];
+    try {
+      _isLoading = true;
       notifyListeners();
-    } else {
-      throw Exception("Upload failed: ${response.reasonPhrase}");
+
+      final request = http.MultipartRequest(
+        'POST',
+        Uri.parse('http://${config.ipAddress}:5000/upload'),
+      );
+      request.files.add(await http.MultipartFile.fromPath(
+          'user_image',
+          _profileImageFile!.path
+      ));
+
+      final response = await request.send();
+      if (response.statusCode == 200) {
+        final responseData = await response.stream.bytesToString();
+        final filename = jsonDecode(responseData)['filename'];
+        _profileImageUrl = 'http://${config.ipAddress}:5000/uploads/$filename';
+      } else {
+        throw Exception('Upload failed with status ${response.statusCode}');
+      }
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
+  // Future<void> uploadImage() async {
+  //   if (_profileImageFile == null) {
+  //     throw Exception("Please select an image first.");
+  //   }
+  //   var request = http.MultipartRequest(
+  //     "POST",
+  //     Uri.parse("http://${config.ipAddress}:5000/upload"),
+  //   );
+  //
+  //   request.files.add(
+  //     await http.MultipartFile.fromPath("user_image", _profileImageFile!.path),
+  //   );
+  //
+  //   var response = await request.send();
+  //
+  //   if (response.statusCode == 200) {
+  //     var responseBody = await response.stream.bytesToString();
+  //     _profileImageUrl = jsonDecode(responseBody)['imageUrl'];
+  //     notifyListeners();
+  //   } else {
+  //     throw Exception("Upload failed: ${response.reasonPhrase}");
+  //   }
+  // }
 
   // Submit profile data to the server
-/*
+  // Future<void> submitProfile(BuildContext context, int userId) async {
+  //   if (nameController.text.isEmpty ||
+  //       phoneNumberController.text.isEmpty ||
+  //       _gender == null ||
+  //       _profileImageUrl == null) {
+  //     throw Exception("Please fill all fields and upload an image.");
+  //   }
+  //
+  //   final url = Uri.parse('http://${config.ipAddress}:5000/profile');
+  //   final response = await http.post(
+  //     url,
+  //     headers: {"Content-Type": "application/json"},
+  //     body: jsonEncode({
+  //       "user_id": userId,
+  //       "name": nameController.text,
+  //       "phone_no": phoneNumberController.text,
+  //       "gender": _gender,
+  //       "user_image": _profileImageUrl,
+  //     }),
+  //   );
+  //
+  //   if (response.statusCode == 200) {
+  //     // Save profile completion status
+  //     final prefs = await SharedPreferences.getInstance();
+  //     await prefs.setBool('isProfileComplete', true);
+  //
+  //     // Redirect to Home Page based on role
+  //     final role = prefs.getInt('role') ?? -1;
+  //     Navigator.pushReplacement(
+  //       context,
+  //       MaterialPageRoute(
+  //         builder: (context) => role == 0 ? AdminHomeScreen() : HomeScreen(),
+  //       ),
+  //     );
+  //   } else {
+  //     throw Exception("Update Failed: ${response.body}");
+  //   }
+  // }
+
+// Profile submission
   Future<void> submitProfile(BuildContext context, int userId) async {
-    if (nameController.text.isEmpty ||
-        phoneNumberController.text.isEmpty ||
-        _gender == null ||
-        _profileImageUrl == null) {
-      throw Exception("Please fill all fields and upload an image.");
-    }
+    try {
+      _validateInputs();
 
-    final url = Uri.parse('http://192.168.100.179:5000/profile');
-    final response = await http.post(
-      url,
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode({
-        "user_id": userId,
-        "name": nameController.text,
-        "phone_no": phoneNumberController.text,
-        "gender": _gender,
-        "user_image": _profileImageUrl,
-      }),
-    );
-
-    if (response.statusCode != 200) {
-      throw Exception("Update Failed: ${response.body}");
-    }
-  }
-*/
-
-  Future<void> submitProfile(BuildContext context, int userId) async {
-    if (nameController.text.isEmpty ||
-        phoneNumberController.text.isEmpty ||
-        _gender == null ||
-        _profileImageUrl == null) {
-      throw Exception("Please fill all fields and upload an image.");
-    }
-
-    final url = Uri.parse('http://${config.ipAddress}:5000/profile');
-    final response = await http.post(
-      url,
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode({
-        "user_id": userId,
-        "name": nameController.text,
-        "phone_no": phoneNumberController.text,
-        "gender": _gender,
-        "user_image": _profileImageUrl,
-      }),
-    );
-
-    if (response.statusCode == 200) {
-      // Save profile completion status
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('isProfileComplete', true);
+      final token = prefs.getString('token');
 
-      // Redirect to Home Page based on role
-      final role = prefs.getInt('role') ?? -1;
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => role == 0 ? AdminHomeScreen() : HomeScreen(),
-        ),
+      final response = await http.post(
+        Uri.parse('http://${config.ipAddress}:5000/profile'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({
+          'user_id': userId,
+          'name': nameController.text,
+          'phone_no': phoneNumberController.text,
+          'gender': _gender,
+          'user_image': _profileImageUrl?.split('/').last,
+        }),
       );
-    } else {
-      throw Exception("Update Failed: ${response.body}");
+
+      _handleResponse(response, context, prefs);
+    } catch (e) {
+      throw Exception('Profile update failed: ${e.toString()}');
     }
   }
+
+  void _validateInputs() {
+    if (nameController.text.isEmpty ||
+        phoneNumberController.text.isEmpty ||
+        _gender == null) {
+      throw Exception('Please fill all required fields');
+    }
+
+    if (!RegExp(r'^[0-9]{10}$').hasMatch(phoneNumberController.text)) {
+      throw Exception('Invalid phone number format');
+    }
+  }
+
+  void _handleResponse(http.Response response, BuildContext context, SharedPreferences prefs) {
+    if (response.statusCode == 200) {
+      prefs.setBool('isProfileComplete', true);
+      _navigateBasedOnRole(context, prefs.getInt('role'));
+    } else if (response.statusCode == 401) {
+      throw Exception('Session expired. Please login again');
+    } else {
+      throw Exception(jsonDecode(response.body)['message'] ?? 'Update failed');
+    }
+  }
+
+  void _navigateBasedOnRole(BuildContext context, int? role) {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => role == 0 ? AdminHomeScreen() : HomeScreen(),
+      ),
+    );
+  }
+
+  // Clear state
+  void clearProfile() {
+    nameController.clear();
+    phoneNumberController.clear();
+    _gender = null;
+    _profileImageUrl = null;
+    _profileImageFile = null;
+    notifyListeners();
+  }
+
 
 }
 
