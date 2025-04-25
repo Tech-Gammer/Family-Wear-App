@@ -28,26 +28,6 @@ import '../../../2_Assets/Colors/Colors_Scheme.dart';
       });
     }
 
-    // Future<void> _loadUserData() async {
-    //   final userProvider = Provider.of<UserProvider>(context, listen: false);
-    //   // Check if data is already loaded
-    //   if (userProvider.userId == null) {
-    //     await userProvider.loadUserDataFromPrefs();
-    //   }
-    //
-    //   try {
-    //     await userProvider.fetchUserData();
-    //   } catch (e) {
-    //     // Handle error if needed
-    //     debugPrint("Error loading user data: $e");
-    //   } finally {
-    //     if (mounted) {
-    //       setState(() {
-    //         _isLoading = false;
-    //       });
-    //     }
-    //   }
-    // }
 
     Future<void> _loadUserData() async {
       final userProvider = Provider.of<UserProvider>(context, listen: false);
@@ -189,12 +169,12 @@ import '../../../2_Assets/Colors/Colors_Scheme.dart';
                     tileColor: Colors.white,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     trailing: Icon(Icons.arrow_forward_ios, size: screenWidth * 0.04, color: AppColors.darkTextColor,),
-                    leading: CircleAvatar(
-                      backgroundImage: userProvider.imageUrl.isNotEmpty
-                          ? NetworkImage(userProvider.imageUrl) as ImageProvider
-                          : AssetImage('asset/ring.jpg'),
-                      radius: screenWidth * 0.06,
-                    ),
+                    // leading: CircleAvatar(
+                    //   backgroundImage: userProvider.imageUrl.isNotEmpty
+                    //       ? NetworkImage(userProvider.imageUrl) as ImageProvider
+                    //       : AssetImage('asset/ring.jpg'),
+                    //   radius: screenWidth * 0.06,
+                    // ),
                     title: Row(
                       children: [
                         Text(

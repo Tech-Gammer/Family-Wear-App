@@ -122,71 +122,7 @@ class ProfileProvider with ChangeNotifier {
       notifyListeners();
     }
   }
-  // Future<void> uploadImage() async {
-  //   if (_profileImageFile == null) {
-  //     throw Exception("Please select an image first.");
-  //   }
-  //   var request = http.MultipartRequest(
-  //     "POST",
-  //     Uri.parse("http://${config.ipAddress}:5000/upload"),
-  //   );
-  //
-  //   request.files.add(
-  //     await http.MultipartFile.fromPath("user_image", _profileImageFile!.path),
-  //   );
-  //
-  //   var response = await request.send();
-  //
-  //   if (response.statusCode == 200) {
-  //     var responseBody = await response.stream.bytesToString();
-  //     _profileImageUrl = jsonDecode(responseBody)['imageUrl'];
-  //     notifyListeners();
-  //   } else {
-  //     throw Exception("Upload failed: ${response.reasonPhrase}");
-  //   }
-  // }
 
-  // Submit profile data to the server
-  // Future<void> submitProfile(BuildContext context, int userId) async {
-  //   if (nameController.text.isEmpty ||
-  //       phoneNumberController.text.isEmpty ||
-  //       _gender == null ||
-  //       _profileImageUrl == null) {
-  //     throw Exception("Please fill all fields and upload an image.");
-  //   }
-  //
-  //   final url = Uri.parse('http://${config.ipAddress}:5000/profile');
-  //   final response = await http.post(
-  //     url,
-  //     headers: {"Content-Type": "application/json"},
-  //     body: jsonEncode({
-  //       "user_id": userId,
-  //       "name": nameController.text,
-  //       "phone_no": phoneNumberController.text,
-  //       "gender": _gender,
-  //       "user_image": _profileImageUrl,
-  //     }),
-  //   );
-  //
-  //   if (response.statusCode == 200) {
-  //     // Save profile completion status
-  //     final prefs = await SharedPreferences.getInstance();
-  //     await prefs.setBool('isProfileComplete', true);
-  //
-  //     // Redirect to Home Page based on role
-  //     final role = prefs.getInt('role') ?? -1;
-  //     Navigator.pushReplacement(
-  //       context,
-  //       MaterialPageRoute(
-  //         builder: (context) => role == 0 ? AdminHomeScreen() : HomeScreen(),
-  //       ),
-  //     );
-  //   } else {
-  //     throw Exception("Update Failed: ${response.body}");
-  //   }
-  // }
-
-// Profile submission
   Future<void> submitProfile(BuildContext context, int userId) async {
     try {
       _validateInputs();
@@ -222,9 +158,10 @@ class ProfileProvider with ChangeNotifier {
       throw Exception('Please fill all required fields');
     }
 
-    if (!RegExp(r'^[0-9]{10}$').hasMatch(phoneNumberController.text)) {
-      throw Exception('Invalid phone number format');
+    if (!RegExp(r'^(03[0-9]{9})|(\+923[0-9]{9})$').hasMatch(phoneNumberController.text)) {
+      throw Exception('Invalid phone number format. Please use 03216455926 or +923416455926');
     }
+
   }
 
   void _handleResponse(http.Response response, BuildContext context, SharedPreferences prefs) {

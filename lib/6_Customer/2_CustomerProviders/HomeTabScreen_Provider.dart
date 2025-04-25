@@ -1,53 +1,3 @@
-// import 'package:flutter/material.dart';
-// import 'package:http/http.dart' as http;
-// import 'dart:convert';
-//
-// import '../../ip_address.dart';
-//
-// class UserProvider with ChangeNotifier {
-//
-//   String _name = "";
-//   String _email = "";
-//   String _imageUrl = "";
-//   bool _isLoading = false;
-//
-//   String get name => _name;
-//   String get email => _email;
-//   String get imageUrl => _imageUrl;
-//   bool get isLoading => _isLoading;
-//
-//   Future<void> fetchUserData(int userId, String userName, String email) async {
-//     _isLoading = true;
-//     notifyListeners();
-//
-//     final url = Uri.parse("http://${NetworkConfig().ipAddress}:5000/user"); // Change IP if needed
-//     try {
-//       final response = await http.post(
-//         url,
-//         headers: {"Content-Type": "application/json"},
-//         body: json.encode({
-//           "user_id": userId,
-//           "user_name": userName,
-//           "email": email,
-//         }),
-//       );
-//
-//       if (response.statusCode == 200) {
-//         final data = json.decode(response.body);
-//         _name = data['user_name'];
-//         _email = data['email'];
-//         _imageUrl = data['user_image'];
-//       } else {
-//         print("Error: ${response.body}");
-//       }
-//     } catch (error) {
-//       print("Error fetching user data: $error");
-//     }
-//
-//     _isLoading = false;
-//     notifyListeners();
-//   }
-// }
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -91,50 +41,6 @@ class UserProvider with ChangeNotifier {
       return true;
     }
     return false;
-  }
-
-  Future<void> fetchUserData() async {
-    if (_userId == null || _userName.isEmpty || _email.isEmpty) {
-      _handleError("Missing user credentials");
-      return;
-    }
-
-    _isLoading = true;
-    _errorMessage = null;
-    notifyListeners();
-
-    try {
-      final response = await http.post(
-        Uri.parse("http://${NetworkConfig().ipAddress}:5000/user"),
-        headers: {"Content-Type": "application/json"},
-        body: json.encode({
-          "user_id": _userId,
-          "user_name": _userName,
-          "email": _email,
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        _updateUserData(data);
-        await saveUserDataToPrefs();
-      } else {
-        _handleError("Failed to fetch user data: ${response.statusCode}");
-      }
-    } catch (error) {
-      _handleError("Connection error: ${error.toString()}");
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
-  }
-
-  void _updateUserData(Map<String, dynamic> data) {
-    _name = data['name'] ?? _userName;
-    _email = data['email'] ?? _email;
-    _imageUrl = data['user_image']?.toString() ?? "";
-    _role = data['role'] ?? _role;
-    _userName = data['user_name'] ?? _userName;
   }
 
   // Add imageUrl parameter
@@ -186,6 +92,44 @@ class UserProvider with ChangeNotifier {
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
+    notifyListeners();
+  }
+
+  Future<void> fetchUserData() async {
+    if (_userId == null) {
+      _handleError("User ID not available");
+      return;
+    }
+
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final response = await http.get(
+        Uri.parse("http://${NetworkConfig().ipAddress}:5000/user/$_userId"),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        _updateUserData(data);
+        await saveUserDataToPrefs();
+      } else {
+        _handleError("Failed to fetch user data: ${response.statusCode}");
+      }
+    } catch (error) {
+      _handleError("Connection error: ${error.toString()}");
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  void _updateUserData(Map<String, dynamic> data) {
+    _name = data['name'] ?? _name;
+    _email = data['email'] ?? _email;
+    _imageUrl = data['user_image']?.toString() ?? _imageUrl;
+    _role = data['role'] ?? _role;
+    _userName = data['user_name'] ?? _userName;
     notifyListeners();
   }
 }

@@ -110,11 +110,18 @@ class _ProfilePageState extends State<ProfilePage> {
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return "Please enter your phone number";
-                    } else if (value.length != 11) {
-                      return "Phone number must be 11 digits";
                     }
+
+                    final localPattern = RegExp(r'^03[0-9]{9}$');            // e.g. 03216455926
+                    final intlPattern = RegExp(r'^\+923[0-9]{9}$');          // e.g. +923416455926
+
+                    if (!localPattern.hasMatch(value) && !intlPattern.hasMatch(value)) {
+                      return "Enter a valid phone number (e.g. 0321XXXXXXX or +92321XXXXXXX)";
+                    }
+
                     return null;
                   },
+
                   screenWidth: screenWidth,
                   screenHeight: screenHeight,
                 ),

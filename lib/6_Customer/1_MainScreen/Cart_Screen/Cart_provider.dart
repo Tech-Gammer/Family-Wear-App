@@ -46,15 +46,39 @@ class CartProvider extends ChangeNotifier {
   int get itemCount => cartItems.length;
 
   double get subtotal => cartItems.fold(0, (sum, item) => sum + (item.price * item.quantity));
-  //
-  // void initialize(String userId) {
-  //   _userId = userId;
-  //   _loadCartItems();
-  // }
+
   Future<void> initialize(String userId) async {
     _userId = userId;
     await _loadCartItems();
   }
+
+  Future<void> fetchCartItems(String userId) async {
+    final url = Uri.parse('http://${NetworkConfig().ipAddress}:5000/cart/$userId');
+
+    try {
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+
+        _cartItems = data.map((item) => CartItem(
+          userId: userId,
+          itemId: item['item_id'].toString(),
+          title: item['title'],
+          category: item['category'],
+          price: double.tryParse(item['price'].toString()) ?? 0.0,
+          quantity: item['quantity'],
+          imageUrl: item['image_url'] ?? 'https://via.placeholder.com/150',
+        )).toList();
+
+        notifyListeners();
+      } else {
+        print('Failed to load cart items: ${response.body}');
+      }
+    } catch (e) {
+      print('Exception while fetching cart items: $e');
+    }
+  }
+
 
   Future<void> _loadCartItems() async {
     if (_userId == null) return;

@@ -1,14 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
+import 'package:http/http.dart' as http;
+import '../../../ip_address.dart';
 import '../../2_CustomerProviders/HomeTabScreen_Provider.dart';
 import 'Cart_provider.dart';
 
-class CartScreen extends StatelessWidget {
+class CartScreen extends StatefulWidget {
+  const CartScreen({super.key});
+
+  @override
+  State<CartScreen> createState() => _CartScreenState();
+}
+
+class _CartScreenState extends State<CartScreen> {
+
+
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      final userId = Provider.of<UserProvider>(context, listen: false).userId.toString();
+      Provider.of<CartProvider>(context, listen: false).fetchCartItems(userId);
+    });
+  }
+
+
+
   @override
   Widget build(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context);
-    final cartProvider = Provider.of<CartProvider>(context);
+    final cartProvider = Provider.of<CartProvider>(context); // Listens to changes
+
+
 
     final userCartItems = cartProvider.cartItems
         .where((item) => item.userId == userProvider.userId.toString())

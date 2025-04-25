@@ -30,39 +30,53 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
   @override
   void initState() {
     super.initState();
-
     _pageController = PageController(viewportFraction: 0.85);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final userProvider = Provider.of<UserProvider>(context, listen: false);
-      userId = userProvider.userId; // Assuming you have userId in UserProvider
-      Provider.of<ShowSliderProvider>(context, listen: false).fetchSliderImages();
-      Provider.of<CategoryProvider>(context, listen: false).fetchCategories();
-      Provider.of<ShowItemProvider>(context, listen: false).fetchItems(); // Add this
-      Provider.of<ItemProvider>(context, listen: false).loadFavorites(userId.toString());
-    });
 
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      userId = userProvider.userId;
+
+      // Load initial data without triggering rebuild
+      await userProvider.loadUserDataFromPrefs();
+
+      if (userId != null) {
+        await userProvider.fetchUserData();
+      }
+
+      // Load other providers
+      final showSliderProvider = Provider.of<ShowSliderProvider>(context, listen: false);
+      final categoryProvider = Provider.of<CategoryProvider>(context, listen: false);
+      final showItemProvider = Provider.of<ShowItemProvider>(context, listen: false);
+      final itemProvider = Provider.of<ItemProvider>(context, listen: false);
+
+      // Schedule provider initializations
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        showSliderProvider.fetchSliderImages();
+        categoryProvider.fetchCategories();
+        showItemProvider.fetchItems();
+        itemProvider.loadFavorites(userId?.toString() ?? '');
+      });
+    });
   }
 
 
-  void _addToCart(BuildContext context, dynamic itemData) {
+
+  void _addToCart(BuildContext context, dynamic itemData) async {
     final cartProvider = Provider.of<CartProvider>(context, listen: false);
     final userProvider = Provider.of<UserProvider>(context, listen: false);
 
-    // Get required data
     String userId = userProvider.userId.toString();
     String itemId = itemData['item_id'].toString();
 
-    // First add to local cart (for immediate UI update)
+    // Prepare cart item data
     Map<String, dynamic> item = {};
     itemData.forEach((key, value) {
       item[key.toString()] = value;
     });
 
     List<dynamic> imageList = [];
-    if (item['item_image'] != null) {
-      if (item['item_image'] is List) {
-        imageList = item['item_image'];
-      }
+    if (item['item_image'] != null && item['item_image'] is List) {
+      imageList = item['item_image'];
     }
 
     final cartItem = CartItem(
@@ -76,30 +90,32 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
           : 'https://via.placeholder.com/150',
     );
 
-    cartProvider.addToCart(cartItem);
+    try {
+      bool success = await _addToCartBackend(context, userId, itemId);
 
-    // Then send to backend
-    _addToCartBackend(userId, itemId);
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('${cartItem.title} added to cart'),
-        duration: Duration(seconds: 2),
-        action: SnackBarAction(
-          label: 'VIEW CART',
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => CartScreen()),
-            );
-          },
-        ),
-      ),
-    );
+      if (success) {
+        cartProvider.addToCart(cartItem);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${cartItem.title} added to cart'),
+            duration: Duration(seconds: 2),
+            action: SnackBarAction(
+              label: 'VIEW CART',
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => CartScreen()),
+              ),
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      print('Exception when adding to cart: $e');
+    }
   }
 
 // New method to handle API call
-  Future<void> _addToCartBackend(String userId, String itemId) async {
+  Future<bool> _addToCartBackend(BuildContext context, String userId, String itemId) async {
     try {
       final response = await http.post(
         Uri.parse('http://${NetworkConfig().ipAddress}:5000/add-to-cart'),
@@ -110,17 +126,38 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
         }),
       );
 
-      if (response.statusCode != 200) {
+      if (response.statusCode == 200) {
+        return true;
+      } else if (response.statusCode == 400) {
+        final responseData = json.decode(response.body);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(responseData['message']),
+            duration: Duration(seconds: 2),
+          ),
+        );
+        return false;
+      } else {
         print('Error adding to cart: ${response.body}');
-        // You might want to handle this error in the UI as well
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to add to cart'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+        return false;
       }
     } catch (e) {
       print('Exception when adding to cart: $e');
-      // Handle network errors
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Network error, please try again'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return false;
     }
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -150,57 +187,114 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
+                // Row(
+                //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                //   children: [
+                //     Row(
+                //       children: [
+                //         // CircleAvatar(
+                //         //   radius: screenHeight * 0.03,
+                //         //   backgroundImage: userProvider.imageUrl.isNotEmpty
+                //         //       ? NetworkImage(userProvider.imageUrl)
+                //         //       : AssetImage("asset/wallet.jpg") as ImageProvider,
+                //         // ),
+                //         SizedBox(width: screenWidth * 0.03),
+                //         Column(
+                //           crossAxisAlignment: CrossAxisAlignment.start,
+                //           children: [
+                //             Text(
+                //               userProvider.name.isNotEmpty
+                //                   ? userProvider.name
+                //                   : "Guest User",
+                //               style: TextStyle(
+                //                 fontWeight: FontWeight.bold,
+                //                 fontSize: responsiveFontSize * 1.4,
+                //               ),
+                //             ),
+                //             Text(
+                //               "ID: ${userProvider.userId ?? 'N/A'}",
+                //               style: TextStyle(
+                //                 color: Colors.grey,
+                //                 fontSize: responsiveFontSize * 1.1,
+                //               ),
+                //             ),
+                //           ],
+                //         ),
+                //       ],
+                //     ),
+                //     Container(
+                //       height: screenHeight * 0.05,
+                //       width: screenHeight * 0.05,
+                //       decoration: BoxDecoration(
+                //         shape: BoxShape.circle,
+                //         color: isDarkTheme ? AppColors.accentColor : AppColors.background,
+                //       ),
+                //       child: Icon(
+                //         Icons.notifications,
+                //         size: responsiveFontSize * 2,
+                //         color: AppColors.primaryColor,
+                //       ),
+                //     ),
+                //   ],
+                // ),
+                Consumer<UserProvider>(
+                  builder: (context, userProvider, _) {
+                    if (userProvider.isLoading) {
+                      return LinearProgressIndicator();
+                    }
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        // CircleAvatar(
-                        //   radius: screenHeight * 0.03,
-                        //   backgroundImage: userProvider.imageUrl.isNotEmpty
-                        //       ? NetworkImage(userProvider.imageUrl)
-                        //       : AssetImage("asset/wallet.jpg") as ImageProvider,
-                        // ),
-                        SizedBox(width: screenWidth * 0.03),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        Row(
                           children: [
-                            Text(
-                              userProvider.name.isNotEmpty
-                                  ? userProvider.name
-                                  : "Guest User",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: responsiveFontSize * 1.4,
-                              ),
-                            ),
-                            Text(
-                              "ID: ${userProvider.userId ?? 'N/A'}",
-                              style: TextStyle(
-                                color: Colors.grey,
-                                fontSize: responsiveFontSize * 1.1,
-                              ),
+                            // CircleAvatar(
+                            //   radius: screenHeight * 0.03,
+                            //   backgroundImage: userProvider.imageUrl.isNotEmpty
+                            //       ? NetworkImage(userProvider.imageUrl)
+                            //       : AssetImage("dress.png") as ImageProvider,
+                            // ),
+                            SizedBox(width: screenWidth * 0.03),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  userProvider.name.isNotEmpty
+                                      ? userProvider.name
+                                      : "Guest User",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: responsiveFontSize * 1.4,
+                                  ),
+                                ),
+                                Text(
+                                  "ID: ${userProvider.userId ?? 'N/A'}",
+                                  style: TextStyle(
+                                    color: Colors.grey,
+                                    fontSize: responsiveFontSize * 1.1,
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
+                        Container(
+                          height: screenHeight * 0.05,
+                          width: screenHeight * 0.05,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: isDarkTheme ? AppColors.accentColor : AppColors.background,
+                          ),
+                          child: Icon(
+                            Icons.notifications,
+                            size: responsiveFontSize * 2,
+                            color: AppColors.primaryColor,
+                          ),
+                        ),
                       ],
-                    ),
-                    Container(
-                      height: screenHeight * 0.05,
-                      width: screenHeight * 0.05,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: isDarkTheme ? AppColors.accentColor : AppColors.background,
-                      ),
-                      child: Icon(
-                        Icons.notifications,
-                        size: responsiveFontSize * 2,
-                        color: AppColors.primaryColor,
-                      ),
-                    ),
-                  ],
+                    );
+                  },
                 ),
+
 
                 SizedBox(height: screenHeight * 0.015),
 
