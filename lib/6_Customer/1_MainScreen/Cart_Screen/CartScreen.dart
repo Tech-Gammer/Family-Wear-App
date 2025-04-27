@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 import '../../../ip_address.dart';
 import '../../2_CustomerProviders/HomeTabScreen_Provider.dart';
+import '../Checkout_Screen/CheckoutScreen.dart';
 import 'Cart_provider.dart';
 
 class CartScreen extends StatefulWidget {
@@ -107,10 +108,10 @@ class _CartScreenState extends State<CartScreen> {
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                          IconButton(
-                            icon: Icon(Icons.delete, color: Colors.red, size: 20),
-                            onPressed: () => cartProvider.removeFromCart(item.itemId),
-                          ),
+                          // IconButton(
+                          //   icon: Icon(Icons.delete, color: Colors.red, size: 20),
+                          //   onPressed: () => cartProvider.removeFromCart(item.itemId),
+                          // ),
                         ],
                       ),
                       isThreeLine: true,
@@ -206,8 +207,14 @@ class _CartScreenState extends State<CartScreen> {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     ),
                     onPressed: () {
-                      // Implement checkout functionality
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => CheckoutPage(cartItems: userCartItems),
+                        ),
+                      );
                     },
+
                     child: const Text('Checkout', style: TextStyle(color: Colors.white)),
                   ),
                 ],

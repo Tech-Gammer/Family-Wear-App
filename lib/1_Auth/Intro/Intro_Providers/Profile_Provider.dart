@@ -193,8 +193,6 @@ class ProfileProvider with ChangeNotifier {
     _profileImageFile = null;
     notifyListeners();
   }
-
-
 }
 
 

@@ -47,6 +47,10 @@ class CartProvider extends ChangeNotifier {
 
   double get subtotal => cartItems.fold(0, (sum, item) => sum + (item.price * item.quantity));
 
+
+
+
+
   Future<void> initialize(String userId) async {
     _userId = userId;
     await _loadCartItems();
@@ -96,8 +100,45 @@ class CartProvider extends ChangeNotifier {
     }
   }
 
+
+  // Future<void> addToCart(CartItem item) async {
+  //   try {
+  //     final response = await http.post(
+  //       Uri.parse('http://${NetworkConfig().ipAddress}:5000/add-to-cart'),
+  //       headers: {'Content-Type': 'application/json'},
+  //       body: jsonEncode({
+  //         'user_id': _userId,
+  //         'item_id': item.itemId,
+  //       }),
+  //     );
+  //
+  //     if (response.statusCode == 200) {
+  //       // Instead of adding manually -> Fetch the updated cart items from server
+  //       await fetchCartItems(_userId!);  // <-- this will refresh the cart list
+  //     } else {
+  //       print('Failed to add to cart: ${response.body}');
+  //     }
+  //   } catch (e) {
+  //     print('Error adding to cart: $e');
+  //   }
+  // }
+
   Future<void> addToCart(CartItem item) async {
     try {
+      // First, update local cart immediately
+      final existingIndex = _cartItems.indexWhere(
+            (i) => i.itemId == item.itemId && i.userId == _userId,
+      );
+
+      if (existingIndex != -1) {
+        _cartItems[existingIndex].quantity++;
+      } else {
+        _cartItems.add(item);
+      }
+
+      notifyListeners(); // <-- Notify immediately after local update
+
+      // Then, make the API call to update the server
       final response = await http.post(
         Uri.parse('http://${NetworkConfig().ipAddress}:5000/add-to-cart'),
         headers: {'Content-Type': 'application/json'},
@@ -107,21 +148,16 @@ class CartProvider extends ChangeNotifier {
         }),
       );
 
-      if (response.statusCode == 200) {
-        // Check if item already exists in local cart
-        final existingIndex = _cartItems.indexWhere(
-                (i) => i.itemId == item.itemId && i.userId == _userId
-        );
-
-        if (existingIndex != -1) {
-          _cartItems[existingIndex].quantity++;
-        } else {
-          _cartItems.add(item);
-        }
-        notifyListeners();
+      if (response.statusCode != 200) {
+        print('Failed to add to cart: ${response.body}');
+        // Optionally: Rollback local change if needed
+      } else {
+        // Optional: fetch updated cart from server if you want to sync
+        // await fetchCartItems(_userId!);
       }
     } catch (e) {
       print('Error adding to cart: $e');
+      // Optionally: Rollback local change if needed
     }
   }
 

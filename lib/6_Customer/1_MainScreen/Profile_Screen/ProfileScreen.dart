@@ -1,7 +1,8 @@
   import 'package:flutter/material.dart';
   import 'package:provider/provider.dart';
   import 'package:shared_preferences/shared_preferences.dart';
-  import '../../../1_Auth/Intro/2_Create_Account_Page/register_page.dart';
+  import '../../../1_Auth/Intro/2_Create_Account_Page/Profile_Page.dart';
+import '../../../1_Auth/Intro/2_Create_Account_Page/register_page.dart';
   import '../../../1_Auth/Intro/Intro_Providers/Profile_Provider.dart';
 import '../../../2_Assets/Colors/Colors_Scheme.dart';
   import '../../2_CustomerProviders/HomeTabScreen_Provider.dart';
@@ -168,7 +169,18 @@ import '../../../2_Assets/Colors/Colors_Scheme.dart';
                   ListTile(
                     tileColor: Colors.white,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    trailing: Icon(Icons.arrow_forward_ios, size: screenWidth * 0.04, color: AppColors.darkTextColor,),
+                    trailing:IconButton(onPressed: (){
+                      if (userProvider.userId != null) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ProfilePage(userId: userProvider.userId!),
+                          ),
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User ID is not available!")));
+                      }
+                    }, icon: Icon(Icons.arrow_forward_ios, size: screenWidth * 0.04, color: AppColors.darkTextColor)),
                     // leading: CircleAvatar(
                     //   backgroundImage: userProvider.imageUrl.isNotEmpty
                     //       ? NetworkImage(userProvider.imageUrl) as ImageProvider
