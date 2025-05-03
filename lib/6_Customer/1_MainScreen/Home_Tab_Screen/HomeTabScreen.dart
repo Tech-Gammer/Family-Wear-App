@@ -96,18 +96,18 @@
         bool success = await _addToCartBackend(context, userId, itemId);
 
         if (success) {
-          cartProvider.addToCart(cartItem);
+          cartProvider.addToCart(userId,itemId);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('${cartItem.title} added to cart'),
               duration: Duration(seconds: 2),
-              action: SnackBarAction(
-                label: 'VIEW CART',
-                onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => CartScreen()),
-                ),
-              ),
+              // action: SnackBarAction(
+              //   label: 'VIEW CART',
+              //   onPressed: () => Navigator.push(
+              //     context,
+              //     MaterialPageRoute(builder: (context) => CartScreen()),
+              //   ),
+              // ),
             ),
           );
         }
@@ -502,7 +502,7 @@
                       crossAxisSpacing: 16,
                       mainAxisSpacing: 16,
                       // childAspectRatio: 2.8/ 4,
-                      childAspectRatio: 2.8/ 5, // Adjusted to make room for the button
+                      childAspectRatio: 2.8/ 5,
                     ),
                     itemBuilder: (context, index) {
                       // final item = items[index];
@@ -614,18 +614,18 @@
                                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                           children: [
                                             // Rating Stars
-                                            Row(
-                                              children: [
-                                                Icon(Icons.star, color: Colors.orange, size: screenHeight * 0.015),
-                                                Icon(Icons.star, color: Colors.orange, size: screenHeight * 0.015),
-                                                Icon(Icons.star, color: Colors.orange, size: screenHeight * 0.015),
-                                                Icon(Icons.star_border, color: Colors.orange, size: screenHeight * 0.015),
-                                                Icon(Icons.star_border, color: Colors.orange, size: screenHeight * 0.015),
-                                              ],
-                                            ),
+                                            // Row(
+                                            //   children: [
+                                            //     Icon(Icons.star, color: Colors.orange, size: screenHeight * 0.015),
+                                            //     Icon(Icons.star, color: Colors.orange, size: screenHeight * 0.015),
+                                            //     Icon(Icons.star, color: Colors.orange, size: screenHeight * 0.015),
+                                            //     Icon(Icons.star_border, color: Colors.orange, size: screenHeight * 0.015),
+                                            //     Icon(Icons.star_border, color: Colors.orange, size: screenHeight * 0.015),
+                                            //   ],
+                                            // ),
                                             // Available Quantity
                                             Text(
-                                              "${item['minimum_qty']} Available",
+                                              "Remaining Quantity: ${item['minimum_qty']}",
                                               style: TextStyle(
                                                 fontSize: screenHeight * 0.013,
                                                 fontWeight: FontWeight.bold,

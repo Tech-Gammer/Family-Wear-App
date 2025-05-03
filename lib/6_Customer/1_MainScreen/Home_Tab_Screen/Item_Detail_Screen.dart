@@ -58,18 +58,18 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
       bool success = await _addToCartBackend(context, userId, itemId);
 
       if (success) {
-        cartProvider.addToCart(cartItem);
+        cartProvider.addToCart(userId,itemId);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('${cartItem.title} added to cart'),
             duration: Duration(seconds: 2),
-            action: SnackBarAction(
-              label: 'VIEW CART',
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => CartScreen()),
-              ),
-            ),
+            // action: SnackBarAction(
+            //   label: 'VIEW CART',
+            //   onPressed: () => Navigator.push(
+            //     context,
+            //     MaterialPageRoute(builder: (context) => CartScreen()),
+            //   ),
+            // ),
           ),
         );
       }

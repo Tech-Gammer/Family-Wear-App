@@ -14,7 +14,9 @@ class UserProvider with ChangeNotifier {
   int? _role;
   bool _isLoading = false;
   String? _errorMessage;
-
+// Add new properties
+  String _address = "";
+  String _postalCode = "";
   // Getters
   int? get userId => _userId;
   String get userName => _userName;
@@ -24,7 +26,9 @@ class UserProvider with ChangeNotifier {
   int? get role => _role;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
-
+// Update getters
+  String get address => _address;
+  String get postalCode => _postalCode;
   // Load data from SharedPreferences on app start
   Future<bool> loadUserDataFromPrefs() async {
     final prefs = await SharedPreferences.getInstance();
@@ -37,6 +41,8 @@ class UserProvider with ChangeNotifier {
       _email = prefs.getString('email') ?? "";
       _name = prefs.getString('name') ?? "";
       _imageUrl = prefs.getString('user_image') ?? "";
+      _address = prefs.getString('address') ?? "";
+      _postalCode = prefs.getString('postal_code') ?? "";
       notifyListeners();
       return true;
     }
@@ -70,6 +76,8 @@ class UserProvider with ChangeNotifier {
     prefs.setString('email', _email);
     prefs.setString('name', _name);
     prefs.setString('user_image', _imageUrl);
+    prefs.setString('address', _address);
+    prefs.setString('postal_code', _postalCode);
   }
 
   // Error handling
@@ -130,6 +138,8 @@ class UserProvider with ChangeNotifier {
     _imageUrl = data['user_image']?.toString() ?? _imageUrl;
     _role = data['role'] ?? _role;
     _userName = data['user_name'] ?? _userName;
+    _address = data['address']?.toString() ?? '';
+    _postalCode = data['postal_code']?.toString() ?? '';
     notifyListeners();
   }
 }

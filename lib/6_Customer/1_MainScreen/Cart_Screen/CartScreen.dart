@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:http/http.dart' as http;
+import '../../../2_Assets/Colors/Colors_Scheme.dart';
 import '../../../ip_address.dart';
 import '../../2_CustomerProviders/HomeTabScreen_Provider.dart';
 import '../Checkout_Screen/CheckoutScreen.dart';
@@ -14,218 +14,265 @@ class CartScreen extends StatefulWidget {
 }
 
 class _CartScreenState extends State<CartScreen> {
-
-
   @override
   void initState() {
     super.initState();
     Future.microtask(() {
       final userId = Provider.of<UserProvider>(context, listen: false).userId.toString();
-      Provider.of<CartProvider>(context, listen: false).fetchCartItems(userId);
+      Provider.of<CartProvider>(context, listen: false).fetchCartItems(userId: userId);
     });
   }
 
-
-
   @override
   Widget build(BuildContext context) {
-    final userProvider = Provider.of<UserProvider>(context);
-    final cartProvider = Provider.of<CartProvider>(context); // Listens to changes
-
-
-
-    final userCartItems = cartProvider.cartItems
-        .where((item) => item.userId == userProvider.userId.toString())
-        .toList();
+    final theme = Theme.of(context);
+    final isDarkTheme = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Cart'), centerTitle: true),
-      body: Column(
-        children: [
-          Expanded(
-            child: userCartItems.isEmpty
-                ? Center(
+      appBar: AppBar(
+        title: const Text('Shopping Cart'),
+        centerTitle: true,
+      ),
+      body: Consumer<CartProvider>(
+        builder: (context, cartProvider, _) {
+          if (cartProvider.isLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (cartProvider.cartItems.isEmpty) {
+            return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.shopping_cart_outlined, size: 80, color: Colors.grey),
-                  SizedBox(height: 16),
+                  Icon(Icons.shopping_cart_outlined,
+                      size: 80, color: Colors.grey),
+                  const SizedBox(height: 16),
                   Text(
                     'Your cart is empty',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: isDarkTheme
+                          ? AppColors.lightTextColor
+                          : AppColors.darkTextColor,
+                    ),
                   ),
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   Text(
                     'Add items to start shopping',
-                    style: TextStyle(color: Colors.grey),
+                    style: TextStyle(
+                      color: isDarkTheme
+                          ? AppColors.lightTextColor
+                          : AppColors.darkTextColor,
+                    ),
                   ),
                 ],
               ),
-            )
-                : ListView.builder(
-              itemCount: userCartItems.length,
-              itemBuilder: (context, index) {
-                final item = userCartItems[index];
-                return Dismissible(
-                  key: Key(item.itemId),
-                  direction: DismissDirection.endToStart,
-                  background: Container(
-                    alignment: Alignment.centerRight,
-                    padding: EdgeInsets.only(right: 20),
-                    color: Colors.red,
-                    child: Icon(Icons.delete, color: Colors.white),
-                  ),
-                  onDismissed: (direction) {
-                    cartProvider.removeFromCart(item.itemId);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('${item.title} removed from cart'),
-                        duration: Duration(seconds: 2),
+            );
+          }
+
+          return Column(
+            children: [
+              Expanded(
+                child: ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: cartProvider.cartItems.length,
+                  itemBuilder: (context, index) {
+                    final item = cartProvider.cartItems[index];
+                    return Dismissible(
+                      key: Key(item.itemId),
+                      direction: DismissDirection.endToStart,
+                      background: Container(
+                        alignment: Alignment.centerRight,
+                        padding: const EdgeInsets.only(right: 20),
+                        color: Colors.red,
+                        child: const Icon(Icons.delete, color: Colors.white),
                       ),
+                      onDismissed: (direction) {
+                        cartProvider.removeFromCart(item.itemId);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('${item.title} removed from cart'),
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
+                      },
+                      child: CartItemWidget(item: item),
                     );
                   },
-                  child: Card(
-                    margin: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    child: ListTile(
-                      leading: Container(
-                        width: 50,
-                        height: 50,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
-                          image: DecorationImage(
-                            image: NetworkImage(item.imageUrl),
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
-                      title: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              item.title,
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          // IconButton(
-                          //   icon: Icon(Icons.delete, color: Colors.red, size: 20),
-                          //   onPressed: () => cartProvider.removeFromCart(item.itemId),
-                          // ),
-                        ],
-                      ),
-                      isThreeLine: true,
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(item.category),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text('PKR ${item.price.toStringAsFixed(2)}'),
-                              Container(
-                                height: 30,
-                                decoration: BoxDecoration(
-                                  border: Border.all(color: Colors.grey),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    IconButton(
-                                      icon: Icon(Icons.remove, size: 15),
-                                      padding: EdgeInsets.zero,
-                                      constraints: BoxConstraints(),
-                                      onPressed: () =>
-                                          cartProvider.updateQuantity(item.itemId, -1),
-                                    ),
-                                    SizedBox(width: 8),
-                                    Text('${item.quantity}', style: TextStyle(fontSize: 15)),
-                                    SizedBox(width: 8),
-                                    IconButton(
-                                      icon: Icon(Icons.add, size: 15),
-                                      padding: EdgeInsets.zero,
-                                      constraints: BoxConstraints(),
-                                      onPressed: () =>
-                                          cartProvider.updateQuantity(item.itemId, 1),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-          if (userCartItems.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  TextField(
-                    decoration: InputDecoration(
-                      hintText: 'Enter Discount Code',
-                      suffixIcon: TextButton(
-                        onPressed: () {},
-                        child: const Text('Apply', style: TextStyle(color: Colors.orange)),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('Subtotal', style: TextStyle(fontSize: 16)),
-                      Text(
-                        'PKR ${_calculateSubtotal(userCartItems).toStringAsFixed(2)}',
-                        style: const TextStyle(fontSize: 16),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('Total',
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                      Text(
-                        'PKR ${_calculateSubtotal(userCartItems).toStringAsFixed(2)}',
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orange,
-                      padding: const EdgeInsets.symmetric(vertical: 15),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    ),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => CheckoutPage(cartItems: userCartItems),
-                        ),
-                      );
-                    },
-
-                    child: const Text('Checkout', style: TextStyle(color: Colors.white)),
-                  ),
-                ],
+                ),
               ),
-            ),
-        ],
+              _buildCheckoutSection(context, cartProvider),
+            ],
+          );
+        },
       ),
     );
   }
 
-  double _calculateSubtotal(List<CartItem> items) {
-    return items.fold(0, (sum, item) => sum + (item.price * item.quantity));
+  Widget _buildCheckoutSection(BuildContext context, CartProvider cartProvider) {
+    final subtotal = cartProvider.cartItems.fold(
+      0.0,
+          (sum, item) => sum + (item.price * item.quantity),
+    );
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 8,
+            offset: Offset(0, -2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // TextField(
+          //   decoration: InputDecoration(
+          //     hintText: 'Enter Discount Code',
+          //     suffixIcon: TextButton(
+          //       onPressed: () {},
+          //       child: const Text('Apply',
+          //           style: TextStyle(color: Colors.orange)),
+          //     ),
+          //   ),
+          // ),
+          // const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('Subtotal:', style: TextStyle(fontSize: 16)),
+              Text(
+                'PKR ${subtotal.toStringAsFixed(2)}',
+                style: const TextStyle(fontSize: 16),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('Total:',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+              Text(
+                'PKR ${subtotal.toStringAsFixed(2)}',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                  color: AppColors.primaryColor,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.orange,
+              padding: const EdgeInsets.symmetric(vertical: 15),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => CheckoutPage(
+                      cartItems: cartProvider.cartItems),
+                ),
+              );
+            },
+            child: const Text('Checkout',
+                style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
   }
 }
+
+class CartItemWidget extends StatelessWidget {
+  final CartItem item;
+
+  const CartItemWidget({required this.item});
+
+  @override
+  Widget build(BuildContext context) {
+    final cartProvider = Provider.of<CartProvider>(context, listen: false);
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 16),
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.network(
+                item.imageUrl,
+                width: 80,
+                height: 80,
+                fit: BoxFit.cover,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    item.title,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'PKR ${item.price.toStringAsFixed(2)}',
+                    style: TextStyle(
+                        color: AppColors.primaryColor, fontSize: 14),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              height: 30,
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.remove, size: 15),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    onPressed: () => cartProvider.updateQuantity(
+                        item.itemId, -1),
+                  ),
+                  const SizedBox(width: 8),
+                  Text('${item.quantity}',
+                      style: const TextStyle(fontSize: 15)),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    icon: const Icon(Icons.add, size: 15),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    onPressed: () => cartProvider.updateQuantity(
+                        item.itemId, 1),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+

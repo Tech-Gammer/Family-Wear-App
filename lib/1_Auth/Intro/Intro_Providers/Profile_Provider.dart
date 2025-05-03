@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../5_Admin/1_AdminHomeScreen.dart';
+import '../../../6_Customer/2_CustomerProviders/HomeTabScreen_Provider.dart';
 import '../../../6_Customer/HomeScreen.dart';
 import '../../../ip_address.dart';
 
@@ -18,6 +20,9 @@ class ProfileProvider with ChangeNotifier {
   File? _profileImageFile;
   final TextEditingController nameController = TextEditingController();
   final TextEditingController phoneNumberController = TextEditingController();
+  // Add new controllers
+  final TextEditingController addressController = TextEditingController();
+  final TextEditingController postalCodeController = TextEditingController();
   bool _isLoading = false;
 
   NetworkConfig config = NetworkConfig();
@@ -28,7 +33,6 @@ class ProfileProvider with ChangeNotifier {
   String? get profileImageUrl => _profileImageUrl;
   File? get profileImageFile => _profileImageFile;
 
-  // Initialize profile data
   Future<void> initializeProfile(int userId) async {
     try {
       _isLoading = true;
@@ -40,11 +44,10 @@ class ProfileProvider with ChangeNotifier {
 
       if (response.statusCode == 200) {
         final userData = jsonDecode(response.body);
-        // nameController.text = userData['name'] ?? '';
-        // phoneNumberController.text = userData['phone_no'] ?? '';
         nameController.text = userData['name']?.toString() ?? '';
         phoneNumberController.text = userData['phone_no']?.toString() ?? '';
-
+        addressController.text = userData['address']?.toString() ?? '';  // Add this
+        postalCodeController.text = userData['postal_code']?.toString() ?? '';  // Add this
         _gender = userData['gender'];
         _profileImageUrl = userData['user_image'] != null
             ? 'http://${config.ipAddress}:5000/uploads/${userData['user_image']}'
@@ -110,6 +113,8 @@ class ProfileProvider with ChangeNotifier {
       ));
 
       final response = await request.send();
+
+
       if (response.statusCode == 200) {
         final responseData = await response.stream.bytesToString();
         final filename = jsonDecode(responseData)['filename'];
@@ -126,26 +131,31 @@ class ProfileProvider with ChangeNotifier {
   Future<void> submitProfile(BuildContext context, int userId) async {
     try {
       _validateInputs();
-
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
 
       final response = await http.post(
         Uri.parse('http://${config.ipAddress}:5000/profile'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
+        headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'},
         body: jsonEncode({
           'user_id': userId,
           'name': nameController.text,
           'phone_no': phoneNumberController.text,
           'gender': _gender,
+          'address': addressController.text,
+          'postal_code': postalCodeController.text,
           'user_image': _profileImageUrl?.split('/').last,
         }),
       );
 
-      _handleResponse(response, context, prefs);
+      if (response.statusCode == 200) {
+        // Update UserProvider
+        final userProvider = Provider.of<UserProvider>(context, listen: false);
+        await userProvider.fetchUserData();  // Refresh user data
+
+        prefs.setBool('isProfileComplete', true);
+        _navigateBasedOnRole(context, prefs.getInt('role'));
+      }
     } catch (e) {
       throw Exception('Profile update failed: ${e.toString()}');
     }
@@ -154,12 +164,21 @@ class ProfileProvider with ChangeNotifier {
   void _validateInputs() {
     if (nameController.text.isEmpty ||
         phoneNumberController.text.isEmpty ||
-        _gender == null) {
+        _gender == null||
+        addressController.text.isEmpty || // Add address validation
+        postalCodeController.text.isEmpty
+    ) {
       throw Exception('Please fill all required fields');
     }
 
     if (!RegExp(r'^(03[0-9]{9})|(\+923[0-9]{9})$').hasMatch(phoneNumberController.text)) {
       throw Exception('Invalid phone number format. Please use 03216455926 or +923416455926');
+    }
+    if (!RegExp(r'^\d{5}(-\d{4})?$').hasMatch(postalCodeController.text)) {
+      throw Exception('Invalid postal code format');
+    }
+    if (addressController.text.isEmpty) {
+      throw Exception('Address is required');
     }
 
   }

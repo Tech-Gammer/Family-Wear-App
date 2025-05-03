@@ -14,7 +14,9 @@ import 'package:provider/provider.dart';
 import '../6_Customer/HomeScreen.dart';
     import '../raaf3.dart';
     import 'AdminHomePages/Item_Managment/Show_items.dart';
-    import 'AdminHomePages/Slider_Management/addSlider.dart';
+    import 'AdminHomePages/Order_Managment/adminOrderList.dart';
+import 'AdminHomePages/Order_Managment/ordercancellation.dart';
+import 'AdminHomePages/Slider_Management/addSlider.dart';
     import 'AdminHomePages/Slider_Management/showSlider.dart';
     import 'AdminHomePages/Unit_Managment/show_unit.dart';
 
@@ -133,9 +135,10 @@ import '../6_Customer/HomeScreen.dart';
                     builder: (context, userProvider, _) {
                       return UserAccountsDrawerHeader(
                         accountName: Text(
-                          userProvider.name.isNotEmpty
-                              ? userProvider.name
-                              : 'Guest User',
+                          userProvider.userName
+                          // userProvider.name.isNotEmpty
+                          //     ? userProvider.name
+                          //     : 'Guest User',
                         ),
                         accountEmail: Text(userProvider.email),
                         currentAccountPicture: CircleAvatar(
@@ -150,7 +153,9 @@ import '../6_Customer/HomeScreen.dart';
                     },
                   ),
                   buildListTile(Icons.dashboard, 'Dashboard', () => Navigator.push(context, MaterialPageRoute(builder: (context) => AdminHomeScreen()))),
-                  buildListTile(Icons.shopping_cart, 'Order Management', () {} ),
+                  buildListTile(Icons.shopping_cart, 'Order Management', () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context)=>AdminOrdersScreen()));
+                  } ),
                   buildSectionTitle('Item Management'),
                   buildListTile(Icons.add, 'Add Item', ()=> Navigator.push(context, MaterialPageRoute(builder: (context) => AddItem()))),
                   buildListTile(Icons.list, 'Show Items', () => Navigator.push(context, MaterialPageRoute(builder: (context) => ShowItemPage()))),
@@ -163,9 +168,9 @@ import '../6_Customer/HomeScreen.dart';
                   buildSectionTitle('Units Management'),
                   buildListTile(Icons.add, 'Add Units', ()=> Navigator.push(context, MaterialPageRoute(builder: (context) => AddUnitPage()))),
                   buildListTile(Icons.list, 'Show Units', () => Navigator.push(context, MaterialPageRoute(builder: (context) => ShowUnitPage()))),
-                  buildSectionTitle('Notification Management'),
-                  buildListTile(Icons.add, 'Add Notification', () {}),
-                  buildListTile(Icons.list, 'Show Notifications', () {}),
+                  // buildSectionTitle('Notification Management'),
+                  // buildListTile(Icons.add, 'Add Notification', () {}),
+                  // buildListTile(Icons.list, 'Show Notifications', () {}),
                   Divider(),
                   buildListTile(Icons.list, 'Go To Customer Side', () => Navigator.push(context, MaterialPageRoute(builder: (context) => HomeScreen()))),
                   buildListTile(Icons.exit_to_app, 'Logout', () => _showLogoutDialog(context), color: Colors.red),
@@ -179,12 +184,13 @@ import '../6_Customer/HomeScreen.dart';
                   padding: EdgeInsets.all(10),
                   crossAxisCount: crossAxisCount,
                   children: [
-                    buildCard('Orders', Icons.shopping_cart, () => Navigator.push(context, MaterialPageRoute(builder: (context) => UserProfileScreen()))),
+                    buildCard('Orders', Icons.shopping_cart, () => Navigator.push(context, MaterialPageRoute(builder: (context) => AdminOrdersScreen()))),
                     buildCard('Products', Icons.inventory, () => Navigator.push(context, MaterialPageRoute(builder: (context) => ShowItemPage()))),
                     buildCard('Categories', Icons.category, () => Navigator.push(context, MaterialPageRoute(builder: (context) => ShowCategories()))),
                     buildCard('Sliders', Icons.slideshow, () => Navigator.push(context, MaterialPageRoute(builder: (context) => ShowSliderScreen()))),
                     buildCard('Units', Icons.widgets, () => Navigator.push(context, MaterialPageRoute(builder: (context) => ShowUnitPage()))),
-                    buildCard('Notifications', Icons.notifications, (){} ),
+                    buildCard('Cancellation Requests', Icons.widgets, () => Navigator.push(context, MaterialPageRoute(builder: (context) => AdminCancellationRequestsScreen()))),
+                    // buildCard('Notifications', Icons.notifications, (){} ),
                   ],
                 );
               },

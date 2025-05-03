@@ -6,6 +6,7 @@ import '../../../1_Auth/Intro/2_Create_Account_Page/register_page.dart';
   import '../../../1_Auth/Intro/Intro_Providers/Profile_Provider.dart';
 import '../../../2_Assets/Colors/Colors_Scheme.dart';
   import '../../2_CustomerProviders/HomeTabScreen_Provider.dart';
+import '../OrdersScreens/OrdersListPage.dart';
 
   class ProfileScreen extends StatefulWidget {
     const ProfileScreen({Key? key}) : super(key: key);
@@ -28,7 +29,6 @@ import '../../../2_Assets/Colors/Colors_Scheme.dart';
         }
       });
     }
-
 
     Future<void> _loadUserData() async {
       final userProvider = Provider.of<UserProvider>(context, listen: false);
@@ -203,7 +203,9 @@ import '../../../2_Assets/Colors/Colors_Scheme.dart';
                     ),
                   ),
                   const SizedBox(height: 10),
-                  _buildSettingsItem(Icons.payment, "Payments & purchases", screenWidth),
+                  _buildSettingsItem(Icons.payment, "Purchases", screenWidth,(){
+                    Navigator.push(context, MaterialPageRoute(builder: (context)=>MyOrdersScreen()));
+                  }),
                   Divider(),
                   const SizedBox(height: 5),
                   const Text("Settings & Preference",
@@ -214,9 +216,9 @@ import '../../../2_Assets/Colors/Colors_Scheme.dart';
                     ),
                   ),
                   const SizedBox(height: 5),
-                  _buildSettingsItem(Icons.notifications, "Notifications", screenWidth),
-                  _buildSettingsItem(Icons.language, "Language", screenWidth),
-                  _buildSettingsItem(Icons.security, "Security", screenWidth),
+                  // _buildSettingsItem(Icons.notifications, "Notifications", screenWidth,(){}),
+                  // _buildSettingsItem(Icons.language, "Language", screenWidth,(){}),
+                  _buildSettingsItem(Icons.security, "Security", screenWidth,(){}),
                   _buildToggleItem(Icons.dark_mode, "Dark mode", screenWidth),
                   Divider(),
                   const SizedBox(height: 5),
@@ -228,8 +230,8 @@ import '../../../2_Assets/Colors/Colors_Scheme.dart';
                     ),
                   ),
                   const SizedBox(height: 5),
-                  _buildSettingsItem(Icons.help, "Help center", screenWidth),
-                  _buildSettingsItem(Icons.bug_report, "Report a bug", screenWidth),
+                  _buildSettingsItem(Icons.help, "Help center", screenWidth,(){}),
+                  _buildSettingsItem(Icons.bug_report, "Report a bug", screenWidth,(){}),
                   const SizedBox(height: 10),
                   ListTile(
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -245,7 +247,7 @@ import '../../../2_Assets/Colors/Colors_Scheme.dart';
       );
     }
 
-    Widget _buildSettingsItem(IconData icon, String title, double screenWidth) {
+    Widget _buildSettingsItem(IconData icon, String title, double screenWidth, ontap) {
       return Container(
         margin: EdgeInsets.symmetric(vertical: 5),
         decoration: BoxDecoration(
@@ -256,7 +258,7 @@ import '../../../2_Assets/Colors/Colors_Scheme.dart';
           leading: Icon(icon, size: screenWidth * 0.06),
           title: Text(title, style: TextStyle(fontWeight: FontWeight.w500, fontSize: screenWidth * 0.04)),
           trailing: Icon(Icons.arrow_forward_ios, size: screenWidth * 0.04),
-          onTap: () {},
+          onTap: ontap,
         ),
       );
     }
