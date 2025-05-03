@@ -14,7 +14,9 @@ import 'package:provider/provider.dart';
 import '../6_Customer/HomeScreen.dart';
     import '../raaf3.dart';
     import 'AdminHomePages/Item_Managment/Show_items.dart';
-    import 'AdminHomePages/Order_Managment/adminOrderList.dart';
+    import 'AdminHomePages/Item_Managment/item_Purchase.dart';
+import 'AdminHomePages/Item_Managment/purchaseList.dart';
+import 'AdminHomePages/Order_Managment/adminOrderList.dart';
 import 'AdminHomePages/Order_Managment/ordercancellation.dart';
 import 'AdminHomePages/Slider_Management/addSlider.dart';
     import 'AdminHomePages/Slider_Management/showSlider.dart';
@@ -159,7 +161,9 @@ import 'AdminHomePages/adminpages/usersListPage.dart';
                   } ),
                   buildSectionTitle('Item Management'),
                   buildListTile(Icons.add, 'Add Item', ()=> Navigator.push(context, MaterialPageRoute(builder: (context) => AddItem()))),
+                  buildListTile(Icons.add, 'Add Purchase', ()=> Navigator.push(context, MaterialPageRoute(builder: (context) => PurchaseItemPage()))),
                   buildListTile(Icons.list, 'Show Items', () => Navigator.push(context, MaterialPageRoute(builder: (context) => ShowItemPage()))),
+                  buildListTile(Icons.list, 'Show Purchases', () => Navigator.push(context, MaterialPageRoute(builder: (context) => PurchaseListPage()))),
                   buildSectionTitle('Category Management'),
                   buildListTile(Icons.add, 'Add Category', () => Navigator.push(context, MaterialPageRoute(builder: (context) => AddCategory()))),
                   buildListTile(Icons.list, 'Show Categories', () => Navigator.push(context, MaterialPageRoute(builder: (context) => ShowCategories()))),

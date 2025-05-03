@@ -35,6 +35,10 @@
       _pageController = PageController(viewportFraction: 0.85);
 
       WidgetsBinding.instance.addPostFrameCallback((_) async {
+        final sliderProvider = Provider.of<ShowSliderProvider>(context, listen: false);
+        if (!sliderProvider.hasData) {
+          await sliderProvider.fetchSliderImages();
+        }
         final userProvider = Provider.of<UserProvider>(context, listen: false);
         userId = userProvider.userId;
 
@@ -733,23 +737,29 @@
 
     }
 
-    Widget _buildImageSlider(double screenHeight, ShowSliderProvider sliderProvider, HorizontalScrollProvider scrollProvider) {
+    Widget _buildImageSlider(
+        double screenHeight,
+        ShowSliderProvider sliderProvider,
+        HorizontalScrollProvider scrollProvider
+        ) {
       return Column(
         children: [
           // Slider Container
           SizedBox(
             height: screenHeight * 0.2,
-            child: sliderProvider.sliderImages.isEmpty
-                ? Center(child: CircularProgressIndicator()) // Loading state
+            child: sliderProvider.isLoading
+                ? Center(child: CircularProgressIndicator())
                 : CarouselSlider(
               options: CarouselOptions(
                 height: screenHeight * 0.2,
                 aspectRatio: 16 / 9,
                 viewportFraction: 0.85,
                 autoPlay: true,
-                onPageChanged: (index, reason) {
-                  scrollProvider.updatePage(index);
-                },
+                // onPageChanged: (index, reason) {
+                //   scrollProvider.updatePage(index);
+                // },
+                onPageChanged: (index, _) => scrollProvider.updatePage(index),
+
               ),
               items: sliderProvider.sliderImages.map((image) {
                 return Builder(
@@ -759,7 +769,8 @@
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12),
                         image: DecorationImage(
-                          image: MemoryImage(base64Decode(image['image'])),
+                          // image: MemoryImage(base64Decode(image['image'])),
+                          image: MemoryImage(image['image_bytes']),
                           fit: BoxFit.cover,
                         ),
                       ),

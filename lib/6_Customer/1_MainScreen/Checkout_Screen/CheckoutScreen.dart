@@ -109,6 +109,7 @@ import 'package:http/http.dart' as http;
 import '../../../1_Auth/Intro/Intro_Providers/Profile_Provider.dart';
 import '../../../ip_address.dart';
 import '../../2_CustomerProviders/HomeTabScreen_Provider.dart';
+import '../../HomeScreen.dart';
 import '../Cart_Screen/Cart_provider.dart';
 import '../OrdersScreens/OrdersListPage.dart';
 
@@ -189,7 +190,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
         // Navigate to orders page
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
-            builder: (context) => MyOrdersScreen(),
+            builder: (context) => HomeScreen(),
           ),
         );
       } else {
