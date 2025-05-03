@@ -19,6 +19,7 @@ import 'AdminHomePages/Order_Managment/ordercancellation.dart';
 import 'AdminHomePages/Slider_Management/addSlider.dart';
     import 'AdminHomePages/Slider_Management/showSlider.dart';
     import 'AdminHomePages/Unit_Managment/show_unit.dart';
+import 'AdminHomePages/adminpages/usersListPage.dart';
 
     class AdminHomeScreen extends StatelessWidget {
 
@@ -190,6 +191,7 @@ import 'AdminHomePages/Slider_Management/addSlider.dart';
                     buildCard('Sliders', Icons.slideshow, () => Navigator.push(context, MaterialPageRoute(builder: (context) => ShowSliderScreen()))),
                     buildCard('Units', Icons.widgets, () => Navigator.push(context, MaterialPageRoute(builder: (context) => ShowUnitPage()))),
                     buildCard('Cancellation Requests', Icons.widgets, () => Navigator.push(context, MaterialPageRoute(builder: (context) => AdminCancellationRequestsScreen()))),
+                    buildCard('Users List', Icons.widgets, () => Navigator.push(context, MaterialPageRoute(builder: (context) => AdminsPage()))),
                     // buildCard('Notifications', Icons.notifications, (){} ),
                   ],
                 );

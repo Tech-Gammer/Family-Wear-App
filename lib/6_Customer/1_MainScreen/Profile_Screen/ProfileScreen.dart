@@ -2,11 +2,14 @@
   import 'package:provider/provider.dart';
   import 'package:shared_preferences/shared_preferences.dart';
   import '../../../1_Auth/Intro/2_Create_Account_Page/Profile_Page.dart';
-import '../../../1_Auth/Intro/2_Create_Account_Page/register_page.dart';
+  import '../../../1_Auth/Intro/2_Create_Account_Page/register_page.dart';
   import '../../../1_Auth/Intro/Intro_Providers/Profile_Provider.dart';
-import '../../../2_Assets/Colors/Colors_Scheme.dart';
+  import '../../../2_Assets/Colors/Colors_Scheme.dart';
+  import '../../../5_Admin/1_AdminHomeScreen.dart';
+  import '../../../7_Moderator/Moderator.dart';
   import '../../2_CustomerProviders/HomeTabScreen_Provider.dart';
-import '../OrdersScreens/OrdersListPage.dart';
+  import '../OrdersScreens/OrdersListPage.dart';
+
 
   class ProfileScreen extends StatefulWidget {
     const ProfileScreen({Key? key}) : super(key: key);
@@ -238,7 +241,40 @@ import '../OrdersScreens/OrdersListPage.dart';
                     leading: Icon(Icons.logout, color: AppColors.primaryColor, size: screenWidth * 0.06),
                     title: Text("Log out", style: TextStyle(color: AppColors.primaryColor, fontSize: screenWidth * 0.045)),
                     onTap: () => _showLogoutDialog(context),
-                  )
+                  ),
+                  if (userProvider.role == 0 || userProvider.role == 2)
+                    Padding(
+                      padding: EdgeInsets.symmetric(vertical: 10),
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: userProvider.role == 0 ? Colors.deepPurple : Colors.teal,
+                          foregroundColor: Colors.white,
+                          padding: EdgeInsets.symmetric(
+                            vertical: screenHeight * 0.015,
+                            horizontal: screenWidth * 0.06,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        icon: Icon(Icons.dashboard),
+                        label: Text(
+                          userProvider.role == 0 ? 'Go to Admin Panel' : 'Go to Moderator Panel',
+                          style: TextStyle(fontSize: screenWidth * 0.045),
+                        ),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => userProvider.role == 0
+                                  ?  AdminHomeScreen()
+                                  :  ModeratorPanel(),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+
                 ],
               ),
             ),

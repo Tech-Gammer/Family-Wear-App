@@ -61,8 +61,6 @@
       });
     }
 
-
-
     void _addToCart(BuildContext context, dynamic itemData) async {
       final cartProvider = Provider.of<CartProvider>(context, listen: false);
       final userProvider = Provider.of<UserProvider>(context, listen: false);
@@ -116,7 +114,6 @@
       }
     }
 
-  // New method to handle API call
     Future<bool> _addToCartBackend(BuildContext context, String userId, String itemId) async {
       try {
         final response = await http.post(

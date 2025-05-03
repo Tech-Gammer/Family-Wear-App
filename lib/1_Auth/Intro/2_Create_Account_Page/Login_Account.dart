@@ -349,6 +349,7 @@ import '../../../2_Assets/Colors/Colors_Scheme.dart';
 import '../../../5_Admin/1_AdminHomeScreen.dart';
 import '../../../6_Customer/1_MainScreen/Cart_Screen/Cart_provider.dart';
 import '../../../6_Customer/2_CustomerProviders/HomeTabScreen_Provider.dart';
+import '../../../7_Moderator/Moderator.dart';
 import '../../../ip_address.dart';
 
 class LoginAccount extends StatefulWidget {
@@ -538,7 +539,7 @@ class _LoginAccountState extends State<LoginAccount> {
               break;
             case 2:
               Navigator.pushReplacement(context,
-                  MaterialPageRoute(builder: (context) => GuestPage()));
+                  MaterialPageRoute(builder: (context) => ModeratorPanel()));
               break;
             default:
               ScaffoldMessenger.of(context).showSnackBar(

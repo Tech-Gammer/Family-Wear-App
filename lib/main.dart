@@ -20,6 +20,7 @@ import '5_Admin/AdminHomePages/Category_Management/showCategory_Provider.dart';
 import '5_Admin/AdminHomePages/Item_Managment/ShowItem_Provider.dart';
 import '5_Admin/AdminHomePages/Item_Managment/Show_items.dart';
 import '5_Admin/AdminHomePages/Slider_Management/addSlider_Provider.dart';
+import '5_Admin/AdminHomePages/adminpages/usersListProvider.dart';
 import '6_Customer/1_MainScreen/Cart_Screen/Cart_provider.dart';
 import '6_Customer/2_CustomerProviders/Category_Provider.dart';
 import '6_Customer/2_CustomerProviders/GNav_bar_Provider.dart';
@@ -70,6 +71,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => ShowItemProvider()),
         ChangeNotifierProvider(create: (_) => AddSliderImageProvider()),
         ChangeNotifierProvider(create: (_) => ShowSliderProvider()),
+        ChangeNotifierProvider(create: (_) => AllUserProvider()),
         ChangeNotifierProvider<CartProvider>(create: (_) => cartProvider), // Inject preloaded provider
 
       ],
