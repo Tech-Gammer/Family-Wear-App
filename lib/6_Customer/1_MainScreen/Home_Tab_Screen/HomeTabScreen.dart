@@ -37,7 +37,7 @@
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         final sliderProvider = Provider.of<ShowSliderProvider>(context, listen: false);
         if (!sliderProvider.hasData) {
-          await sliderProvider.fetchSliderImages();
+          await sliderProvider.fetchSliderImagesAsBytes();
         }
         final userProvider = Provider.of<UserProvider>(context, listen: false);
         userId = userProvider.userId;
@@ -57,7 +57,7 @@
 
         // Schedule provider initializations
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          showSliderProvider.fetchSliderImages();
+          showSliderProvider.fetchSliderImagesAsBytes();
           categoryProvider.fetchCategories();
           showItemProvider.fetchItems();
           itemProvider.loadFavorites(userId?.toString() ?? '');
@@ -769,7 +769,7 @@
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12),
                         image: DecorationImage(
-                          // image: MemoryImage(base64Decode(image['image'])),
+                           //image: Image.memory(base64Decode(imageData["image"])),
                           image: MemoryImage(image['image_bytes']),
                           fit: BoxFit.cover,
                         ),
@@ -806,6 +806,7 @@
         ],
       );
     }
+
 
     @override
     void dispose() {

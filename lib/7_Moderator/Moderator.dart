@@ -50,20 +50,10 @@ class ModeratorPanel extends StatelessWidget {
             _buildPanelButton(
               context,
               icon: Icons.settings,
-              title: "Settings",
+              title: "Go to customer side",
               color: Colors.green,
               onTap: () {
                 Navigator.push(context, MaterialPageRoute(builder: (context) => HomeScreen()));
-              },
-            ),
-            SizedBox(height: height * 0.02),
-            _buildPanelButton(
-              context,
-              icon: Icons.analytics,
-              title: "Statistics",
-              color: Colors.orange,
-              onTap: () {
-                // Navigate to stats
               },
             ),
           ],

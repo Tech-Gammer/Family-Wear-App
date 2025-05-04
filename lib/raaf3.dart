@@ -1,198 +1,4 @@
 /*
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-
-import '5_Admin/AdminHomePages/Item_Managment/ShowItem_Provider.dart';
-
-class raaf3 extends StatelessWidget {
-  const raaf3({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final provider = Provider.of<ShowItemProvider>(context);
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
-
-    return Scaffold(
-      body: SingleChildScrollView(
-        child: GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: provider.items.length,
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
-            childAspectRatio: 3 / 4,
-          ),
-          itemBuilder: (context, index) {
-            final item = provider.items[index];
-            List<String> images = item['item_image'];  // Multiple images list
-
-            return Stack(
-              children: [
-                Card(
-                  elevation: 4,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Image Section
-                      Stack(
-                        children: [
-                          Container(
-                            height: screenHeight * 0.2,
-                            decoration: BoxDecoration(
-                              borderRadius: const BorderRadius.only(
-                                topLeft: Radius.circular(12),
-                                topRight: Radius.circular(12),
-                              ),
-                              */
-/*image: DecorationImage(
-                                image: AssetImage(item.image),
-                                fit: BoxFit.cover,
-                              ),*//*
-
-                            ),
-                            child:  PageView.builder(
-                              itemCount: images.length,
-                              itemBuilder: (context, imgIndex) {
-                                return Image.network(images[imgIndex], fit: BoxFit.cover);
-                              },
-                            ),
-                          ),
-                          // Optional: Add a gradient overlay for text readability
-                          Positioned.fill(
-                            child: Container(
-                              decoration: BoxDecoration(
-                                borderRadius: const BorderRadius.only(
-                                  topLeft: Radius.circular(12),
-                                  topRight: Radius.circular(12),
-                                ),
-                                gradient: LinearGradient(
-                                  colors: [
-                                    Colors.black.withOpacity(0.2),
-                                    Colors.black.withOpacity(0.0),
-                                  ],
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Row for Name and Price
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                // Item Name
-                                Expanded(
-                                  child: Text(
-                                    item['item_name'],
-                                    overflow: TextOverflow.ellipsis, // Handle text overflow
-                                    maxLines: 1, // Limit to a single line
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: screenHeight * 0.018,
-                                    ),
-                                  ),
-                                ),
-                                SizedBox(height: screenHeight * 0.01),
-                                // Price
-                                Text(
-                                  item['sale_price'],
-                                  textAlign: TextAlign.right,
-                                  style: TextStyle(
-                                    color: Colors.green,
-                                    fontSize: screenHeight * 0.016,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: screenHeight * 0.001),
-                            // Item Description
-                            Text(
-                              item['item_description'],
-                              overflow: TextOverflow.ellipsis, // Handle text overflow
-                              maxLines: 1, // Limit description to 2 lines
-                              style: TextStyle(
-                                color: Colors.grey,
-                                fontSize: screenHeight * 0.015,
-                              ),
-                            ),
-
-                            SizedBox(height: screenHeight * 0.005),
-                            // Row for Item Sold and Rating
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                // Sold Items
-                                Text(
-                                  item['minimum_qty'],
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    //color: isDarkTheme ? AppColors.lightBackgroundColor : AppColors.darkTextColor,
-                                    fontSize: screenHeight * 0.015,
-                                  ),
-                                ),
-
-                                // Rating Stars
-                                Row(
-                                  children: List.generate(5, (index) {
-                                    if (index < item.rating.floor()) {
-                                      // Full star
-                                      return Icon(
-                                        Icons.star,
-                                        color: Colors.orange,
-                                        size: screenHeight * 0.02,
-                                      );
-                                    } else if (index < item.rating) {
-                                      // Half star
-                                      return Icon(
-                                        Icons.star_half,
-                                        color: Colors.orange,
-                                        size: screenHeight * 0.02,
-                                      );
-                                    } else {
-                                      // Empty star
-                                      return Icon(
-                                        Icons.star_border,
-                                        color: Colors.orange,
-                                        size: screenHeight * 0.02,
-                                      );
-                                    }
-                                  }),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            );
-          },
-        ),
-      ),
-    );
-  }
-}
-*/
-
-
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -272,3 +78,64 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     );
   }
 }
+*/
+
+
+// import 'dart:convert';
+// import 'package:family_wear_app/ip_address.dart';
+// import 'package:flutter/material.dart';
+// import 'package:http/http.dart' as http;
+//
+// class ShowSliderProvider with ChangeNotifier {
+//   List<Map<String, dynamic>> _sliderImages = [];
+//   List<Map<String, dynamic>> get sliderImages => _sliderImages;
+//   bool _isLoading = false;
+//   bool _hasData = false;
+//   bool get hasData => _hasData; // Public getter
+//
+//
+//   Future<void> fetchSliderImages() async {
+//
+//     if (_hasData) return; // Prevent refetch if data exists
+//
+//     _isLoading = true;
+//     notifyListeners();
+//
+//     try {
+//       final url = Uri.parse("http://${NetworkConfig().ipAddress}:5000/get_slider_images");
+//       final response = await http.get(url);
+//       if (response.statusCode == 200) {
+//         List<dynamic> data = jsonDecode(response.body);
+//         _sliderImages = data.map((item) => {
+//           "id": item["id"],
+//           "image": item["image"]
+//         }).toList();
+//
+//         _hasData = true;
+//         notifyListeners();
+//       } else {
+//         throw Exception("Failed to load images");
+//       }
+//     } catch (error) {
+//       print("Error fetching images: $error");
+//     }finally {
+//       _isLoading = false;
+//       notifyListeners();
+//     }
+//   }
+//
+//   Future<void> deleteImage(int imageId) async {
+//     final url = Uri.parse("http://${NetworkConfig().ipAddress}:5000/delete_slider_image/$imageId");
+//
+//     try {
+//       final response = await http.delete(url);
+//       if (response.statusCode == 200) {
+//         _sliderImages.removeWhere((image) => image["id"] == imageId);
+//         notifyListeners();
+//       }
+//     } catch (error) {
+//       print("Error deleting image: $error");
+//     }
+//   }
+// }
+

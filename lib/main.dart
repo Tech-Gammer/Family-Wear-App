@@ -29,6 +29,7 @@ import '6_Customer/2_CustomerProviders/Item_Provider.dart';
 import '6_Customer/2_CustomerProviders/HomeScrollProvider.dart';
 import '6_Customer/2_CustomerProviders/Search_Provider.dart';
 import '6_Customer/HomeScreen.dart';
+import '7_Moderator/Moderator.dart';
 import 'firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 
@@ -113,7 +114,7 @@ class MyApp extends StatelessWidget {
       case 1:
         return HomeScreen(); // User
       case 2:
-        return HomeScreen(); // Moderator
+          return ModeratorPanel(); // Moderator
       default:
         return FirstScreen(); // Not logged in
     }
