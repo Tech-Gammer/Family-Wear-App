@@ -1,4 +1,7 @@
-  import 'package:flutter/material.dart';
+  import 'package:family_wear_app/6_Customer/1_MainScreen/Profile_Screen/reportList.dart';
+import 'package:family_wear_app/6_Customer/1_MainScreen/Profile_Screen/reportbugpage.dart';
+import 'package:family_wear_app/6_Customer/1_MainScreen/Profile_Screen/securityPage.dart';
+import 'package:flutter/material.dart';
   import 'package:provider/provider.dart';
   import 'package:shared_preferences/shared_preferences.dart';
   import '../../../1_Auth/Intro/2_Create_Account_Page/Profile_Page.dart';
@@ -9,6 +12,7 @@
   import '../../../7_Moderator/Moderator.dart';
   import '../../2_CustomerProviders/HomeTabScreen_Provider.dart';
   import '../OrdersScreens/OrdersListPage.dart';
+import 'helpCenter.dart';
 
 
   class ProfileScreen extends StatefulWidget {
@@ -221,7 +225,9 @@
                   const SizedBox(height: 5),
                   // _buildSettingsItem(Icons.notifications, "Notifications", screenWidth,(){}),
                   // _buildSettingsItem(Icons.language, "Language", screenWidth,(){}),
-                  _buildSettingsItem(Icons.security, "Security", screenWidth,(){}),
+                  _buildSettingsItem(Icons.security, "Security", screenWidth,(){
+                    Navigator.push(context, MaterialPageRoute(builder: (context)=>AppSecurityFeaturesPage()));
+                  }),
                   _buildToggleItem(Icons.dark_mode, "Dark mode", screenWidth),
                   Divider(),
                   const SizedBox(height: 5),
@@ -233,8 +239,17 @@
                     ),
                   ),
                   const SizedBox(height: 5),
-                  _buildSettingsItem(Icons.help, "Help center", screenWidth,(){}),
-                  _buildSettingsItem(Icons.bug_report, "Report a bug", screenWidth,(){}),
+                  _buildSettingsItem(Icons.help, "Help center", screenWidth,(){
+                    Navigator.push(context, MaterialPageRoute(builder: (context)=>HelpCenterPage()));
+                  }),
+                  _buildSettingsItem(Icons.bug_report, "Report a bug", screenWidth,(){
+                    Navigator.push(context, MaterialPageRoute(builder: (context)=>ReportBugPage()));
+
+                  }),
+                  _buildSettingsItem(Icons.bug_report, "Report List", screenWidth,(){
+                    Navigator.push(context, MaterialPageRoute(builder: (context)=>UserBugReportsPage()));
+
+                  }),
                   const SizedBox(height: 10),
                   ListTile(
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),

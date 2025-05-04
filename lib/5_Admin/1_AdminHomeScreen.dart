@@ -13,6 +13,7 @@ import '../2_Assets/Colors/Colors_Scheme.dart';
 import '../6_Customer/2_CustomerProviders/HomeTabScreen_Provider.dart';
 import '../6_Customer/HomeScreen.dart';
 import '../raaf3.dart';
+import 'AdminHomePages/BugReportPages/reportbugspages.dart';
 import 'AdminHomePages/Item_Managment/Show_items.dart';
 import 'AdminHomePages/Item_Managment/item_Purchase.dart';
 import 'AdminHomePages/Item_Managment/purchaseList.dart';
@@ -306,7 +307,9 @@ class AdminHomeScreen extends StatelessWidget {
                     Icons.widgets,
                     () => Navigator.push(context,
                         MaterialPageRoute(builder: (context) => AdminsPage()))),
-                // buildCard('Notifications', Icons.notifications, (){} ),
+                buildCard('Bug Reports', Icons.notifications, (){
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=>AdminBugReportsPage()));
+                } ),
               ],
             );
           },

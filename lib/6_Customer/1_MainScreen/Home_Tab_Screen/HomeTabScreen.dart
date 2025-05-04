@@ -11,14 +11,10 @@
   import '../../2_CustomerProviders/HomeTabScreen_Provider.dart';
   import '../../2_CustomerProviders/Item_Provider.dart';
   import '../../2_CustomerProviders/Search_Provider.dart';
-  import '../Cart_Screen/CartScreen.dart';
   import '../Cart_Screen/Cart_provider.dart';
-  import '../Cart_Screen/item_GeneralCard.dart';
   import 'package:http/http.dart' as http;
-
   import 'Item_Detail_Screen.dart';
-
-
+  import 'dart:typed_data';
   class HomeTabScreen extends StatefulWidget {
     const HomeTabScreen({super.key});
 
@@ -29,20 +25,25 @@
   class _HomeTabScreenState extends State<HomeTabScreen> {
     int? userId;
     late PageController _pageController;
+
     @override
     void initState() {
       super.initState();
       _pageController = PageController(viewportFraction: 0.85);
 
       WidgetsBinding.instance.addPostFrameCallback((_) async {
+        // Load slider images data first
         final sliderProvider = Provider.of<ShowSliderProvider>(context, listen: false);
         if (!sliderProvider.hasData) {
+          // Use safer method that handles null images better
           await sliderProvider.fetchSliderImagesAsBytes();
+          sliderProvider.preCacheImages(context);
+
         }
+
+        // Load user data
         final userProvider = Provider.of<UserProvider>(context, listen: false);
         userId = userProvider.userId;
-
-        // Load initial data without triggering rebuild
         await userProvider.loadUserDataFromPrefs();
 
         if (userId != null) {
@@ -50,17 +51,17 @@
         }
 
         // Load other providers
-        final showSliderProvider = Provider.of<ShowSliderProvider>(context, listen: false);
         final categoryProvider = Provider.of<CategoryProvider>(context, listen: false);
         final showItemProvider = Provider.of<ShowItemProvider>(context, listen: false);
         final itemProvider = Provider.of<ItemProvider>(context, listen: false);
 
-        // Schedule provider initializations
+        // Schedule provider initializations in a separate frame to avoid UI blocking
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          showSliderProvider.fetchSliderImagesAsBytes();
           categoryProvider.fetchCategories();
           showItemProvider.fetchItems();
-          itemProvider.loadFavorites(userId?.toString() ?? '');
+          if (userId != null) {
+            itemProvider.loadFavorites(userId.toString());
+          }
         });
       });
     }
@@ -172,7 +173,6 @@
       final scrollProvider = Provider.of<HorizontalScrollProvider>(context);
       final PageController pageController = PageController(viewportFraction: 0.85);
       final categories = Provider.of<CategoryProvider>(context).categories;
-      // final items = Provider.of<ItemProvider>(context).items;
       final items = Provider.of<ShowItemProvider>(context).items; // Add
       final userProvider = Provider.of<UserProvider>(context);
       final sliderProvider = Provider.of<ShowSliderProvider>(context);
@@ -190,56 +190,6 @@
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Row(
-                  //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  //   children: [
-                  //     Row(
-                  //       children: [
-                  //         // CircleAvatar(
-                  //         //   radius: screenHeight * 0.03,
-                  //         //   backgroundImage: userProvider.imageUrl.isNotEmpty
-                  //         //       ? NetworkImage(userProvider.imageUrl)
-                  //         //       : AssetImage("asset/wallet.jpg") as ImageProvider,
-                  //         // ),
-                  //         SizedBox(width: screenWidth * 0.03),
-                  //         Column(
-                  //           crossAxisAlignment: CrossAxisAlignment.start,
-                  //           children: [
-                  //             Text(
-                  //               userProvider.name.isNotEmpty
-                  //                   ? userProvider.name
-                  //                   : "Guest User",
-                  //               style: TextStyle(
-                  //                 fontWeight: FontWeight.bold,
-                  //                 fontSize: responsiveFontSize * 1.4,
-                  //               ),
-                  //             ),
-                  //             Text(
-                  //               "ID: ${userProvider.userId ?? 'N/A'}",
-                  //               style: TextStyle(
-                  //                 color: Colors.grey,
-                  //                 fontSize: responsiveFontSize * 1.1,
-                  //               ),
-                  //             ),
-                  //           ],
-                  //         ),
-                  //       ],
-                  //     ),
-                  //     Container(
-                  //       height: screenHeight * 0.05,
-                  //       width: screenHeight * 0.05,
-                  //       decoration: BoxDecoration(
-                  //         shape: BoxShape.circle,
-                  //         color: isDarkTheme ? AppColors.accentColor : AppColors.background,
-                  //       ),
-                  //       child: Icon(
-                  //         Icons.notifications,
-                  //         size: responsiveFontSize * 2,
-                  //         color: AppColors.primaryColor,
-                  //       ),
-                  //     ),
-                  //   ],
-                  // ),
                   Consumer<UserProvider>(
                     builder: (context, userProvider, _) {
                       if (userProvider.isLoading) {
@@ -297,10 +247,7 @@
                       );
                     },
                   ),
-
-
                   SizedBox(height: screenHeight * 0.015),
-
                   // Search Bar
                   Container(
                     height: screenHeight * 0.06,
@@ -357,9 +304,7 @@
                       ],
                     ),
                   ),
-
                   SizedBox(height: screenHeight * 0.015),
-
                   // Horizontal Scrollable Banner
                   Text(
                     "Special For You",
@@ -369,12 +314,8 @@
                     ),
                   ),
                   SizedBox(height: screenHeight * 0.015),
-
                   _buildImageSlider(screenHeight, sliderProvider, scrollProvider),
-
-
                   SizedBox(height: screenHeight * 0.005),
-
                   // Categories Section
                   Text(
                     "Categories",
@@ -383,60 +324,7 @@
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-
                   SizedBox(height: screenHeight * 0.015),
-
-                  // SizedBox(
-                  //   height: screenHeight * 0.12,
-                  //   child: ListView.builder(
-                  //     scrollDirection: Axis.horizontal,
-                  //     itemCount: categories.length,
-                  //     itemBuilder: (context, index) {
-                  //       final category = categories[index];
-                  //       return Padding(
-                  //         padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.025),
-                  //         child: Column(
-                  //           children: [
-                  //             Container(
-                  //               height: screenHeight * 0.07,
-                  //               width: screenHeight * 0.07,
-                  //               decoration: BoxDecoration(
-                  //                 shape: BoxShape.rectangle,
-                  //                 borderRadius: BorderRadius.circular(10),
-                  //                 image: DecorationImage(
-                  //                   image: AssetImage(category.icon),
-                  //                   fit: BoxFit.cover,
-                  //                 ),
-                  //               ),
-                  //             ),
-                  //
-                  //             /*Container(
-                  //               height: screenHeight * 0.07,
-                  //               width: screenHeight * 0.07,
-                  //               decoration: BoxDecoration(
-                  //                 shape: BoxShape.circle,
-                  //                 image: DecorationImage(
-                  //                   image: AssetImage(category.icon),
-                  //                   fit: BoxFit.cover,
-                  //                 ),
-                  //               ),
-                  //             ),*/
-                  //
-                  //             SizedBox(height: screenHeight * 0.005),
-                  //             Text(
-                  //               category.name,
-                  //               style: TextStyle(fontSize: screenHeight * 0.015),
-                  //             ),
-                  //           ],
-                  //         ),
-                  //       );
-                  //     },
-                  //   ),
-                  // ),
-                  //SizedBox(height: screenHeight * 0.0),
-
-                  // Items Section
-                  // Update the categories section in build()
                   Consumer<CategoryProvider>(
                     builder: (context, categoryProvider, _) {
                       if (categoryProvider.isLoading) {
@@ -493,7 +381,6 @@
                     ),
                   ),
                   SizedBox(height: screenHeight * 0.01),
-
                   GridView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
@@ -734,7 +621,6 @@
           ),
         ),
       );
-
     }
 
     Widget _buildImageSlider(
@@ -742,45 +628,93 @@
         ShowSliderProvider sliderProvider,
         HorizontalScrollProvider scrollProvider
         ) {
+      if (sliderProvider.sliderImages.isEmpty) {
+        return SizedBox(height: screenHeight * 0.2);
+      }
       return Column(
         children: [
-          // Slider Container
-          SizedBox(
+          // Slider Container with fixed dimensions
+          Container(
             height: screenHeight * 0.2,
+            width: double.infinity,
             child: sliderProvider.isLoading
                 ? Center(child: CircularProgressIndicator())
-                : CarouselSlider(
+                : CarouselSlider.builder(
+              itemCount: sliderProvider.sliderImages.length,
               options: CarouselOptions(
                 height: screenHeight * 0.2,
-                aspectRatio: 16 / 9,
                 viewportFraction: 0.85,
                 autoPlay: true,
-                // onPageChanged: (index, reason) {
-                //   scrollProvider.updatePage(index);
-                // },
+                autoPlayInterval: Duration(seconds: 5),
+                autoPlayAnimationDuration: Duration(milliseconds: 800),
+                autoPlayCurve: Curves.fastOutSlowIn,
+                enlargeCenterPage: true,
                 onPageChanged: (index, _) => scrollProvider.updatePage(index),
-
               ),
-              items: sliderProvider.sliderImages.map((image) {
-                return Builder(
-                  builder: (BuildContext context) {
-                    return Container(
-                      margin: EdgeInsets.symmetric(horizontal: 8.0),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        image: DecorationImage(
-                           //image: Image.memory(base64Decode(imageData["image"])),
-                          image: MemoryImage(image['image_bytes']),
-                          fit: BoxFit.cover,
-                        ),
-                      ),
+              itemBuilder: (context, index, realIndex) {
+                final image = sliderProvider.sliderImages[index];
+
+                // Try to use image_bytes first, fall back to decoding image if needed
+                Widget imageWidget;
+
+                if (sliderProvider.hasValidImageBytes(image)) {
+                  // Use pre-cached/pre-loaded bytes
+                  imageWidget = Image.memory(
+                    image['image_bytes'],
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    gaplessPlayback: true, // Prevents flickering during image changes
+                    cacheWidth: (MediaQuery.of(context).size.width * 0.85).toInt(), // Optimize memory
+                  );
+                } else if (image.containsKey('image') &&
+                    image['image'] is String &&
+                    (image['image'] as String).isNotEmpty) {
+                  // Fallback to decoding image string if bytes aren't available
+                  try {
+                    final bytes = base64Decode(image['image']);
+                    imageWidget = Image.memory(
+                      bytes,
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      gaplessPlayback: true,
                     );
-                  },
+                  } catch (e) {
+                    // If decoding fails, show placeholder
+                    imageWidget = Container(
+                      color: Colors.grey[300],
+                      child: Icon(Icons.image_not_supported, size: 50),
+                    );
+                  }
+                } else {
+                  // Fallback for missing image data
+                  imageWidget = Container(
+                    color: Colors.grey[300],
+                    child: Icon(Icons.image_not_supported, size: 50),
+                  );
+                }
+
+                return Container(
+                  margin: EdgeInsets.symmetric(horizontal: 5.0),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        spreadRadius: 1,
+                        blurRadius: 3,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: imageWidget,
+                  ),
                 );
-              }).toList(),
+              },
             ),
           ),
-          SizedBox(height: screenHeight * 0.01),
+          SizedBox(height: screenHeight * 0.015),
 
           // Dots Indicator
           Row(
@@ -807,6 +741,126 @@
       );
     }
 
+
+    // Widget _buildImageSlider(
+    //     double screenHeight,
+    //     ShowSliderProvider sliderProvider,
+    //     HorizontalScrollProvider scrollProvider
+    //     ) {
+    //   return Column(
+    //     children: [
+    //       // Slider Container
+    //       SizedBox(
+    //         height: screenHeight * 0.2,
+    //         child: sliderProvider.isLoading
+    //             ? Center(child: CircularProgressIndicator())
+    //             : CarouselSlider(
+    //           options: CarouselOptions(
+    //             height: screenHeight * 0.2,
+    //             aspectRatio: 16 / 9,
+    //             viewportFraction: 0.85,
+    //             autoPlay: true,
+    //             // onPageChanged: (index, reason) {
+    //             //   scrollProvider.updatePage(index);
+    //             // },
+    //             onPageChanged: (index, _) => scrollProvider.updatePage(index),
+    //
+    //           ),
+    //           items: sliderProvider.sliderImages.map((image) {
+    //             // return Builder(
+    //             //   builder: (BuildContext context) {
+    //             //     return Container(
+    //             //       margin: EdgeInsets.symmetric(horizontal: 8.0),
+    //             //       decoration: BoxDecoration(
+    //             //         borderRadius: BorderRadius.circular(12),
+    //             //         image: DecorationImage(
+    //             //           //image: Image.memory(base64Decode(imageData["image"])),
+    //             //           image: MemoryImage(image['image_bytes']),
+    //             //           fit: BoxFit.cover,
+    //             //         ),
+    //             //       ),
+    //             //     );
+    //             //   },
+    //             // );
+    //             return Builder(
+    //               builder: (BuildContext context) {
+    //                 // Handle both formats of image data that might exist
+    //                 Widget imageWidget;
+    //
+    //                 if (image.containsKey('image_bytes') &&
+    //                     image['image_bytes'] is Uint8List &&
+    //                     (image['image_bytes'] as Uint8List).isNotEmpty) {
+    //                   // Use the pre-decoded bytes if available
+    //                   imageWidget = Image.memory(
+    //                     image['image_bytes'],
+    //                     fit: BoxFit.fill,
+    //                   );
+    //                 } else if (image.containsKey('image') &&
+    //                     image['image'] is String &&
+    //                     (image['image'] as String).isNotEmpty) {
+    //                   // Decode the base64 string on the fly
+    //                   try {
+    //                     final bytes = base64Decode(image['image']);
+    //                     imageWidget = Image.memory(
+    //                       bytes,
+    //                       fit: BoxFit.fill,
+    //                     );
+    //                   } catch (e) {
+    //                     // If decoding fails, show placeholder
+    //                     imageWidget = Container(
+    //                       color: Colors.grey[300],
+    //                       child: Icon(Icons.image_not_supported, size: 50),
+    //                     );
+    //                   }
+    //                 } else {
+    //                   // Fallback for missing image data
+    //                   imageWidget = Container(
+    //                     color: Colors.grey[300],
+    //                     child: Icon(Icons.image_not_supported, size: 50),
+    //                   );
+    //                 }
+    //
+    //                 return Container(
+    //                   margin: EdgeInsets.symmetric(horizontal: 8.0),
+    //                   decoration: BoxDecoration(
+    //                     borderRadius: BorderRadius.circular(12),
+    //                   ),
+    //                   child: ClipRRect(
+    //                     borderRadius: BorderRadius.circular(12),
+    //                     child: imageWidget,
+    //                   ),
+    //                 );
+    //               },
+    //             );
+    //           }).toList(),
+    //         ),
+    //       ),
+    //       SizedBox(height: screenHeight * 0.01),
+    //
+    //       // Dots Indicator
+    //       Row(
+    //         mainAxisAlignment: MainAxisAlignment.center,
+    //         children: List.generate(
+    //           sliderProvider.sliderImages.length,
+    //               (index) {
+    //             return AnimatedContainer(
+    //               duration: const Duration(milliseconds: 300),
+    //               margin: const EdgeInsets.symmetric(horizontal: 4.0),
+    //               height: 8,
+    //               width: scrollProvider.currentPage == index ? 16 : 8,
+    //               decoration: BoxDecoration(
+    //                 color: scrollProvider.currentPage == index
+    //                     ? AppColors.primaryColor
+    //                     : Colors.grey,
+    //                 borderRadius: BorderRadius.circular(4),
+    //               ),
+    //             );
+    //           },
+    //         ),
+    //       ),
+    //     ],
+    //   );
+    // }
 
     @override
     void dispose() {
