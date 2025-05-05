@@ -171,12 +171,14 @@ class _CartScreenState extends State<CartScreen> {
           const SizedBox(height: 20),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.orange,
+              backgroundColor: AppColors.primaryColor,
+              // backgroundColor: Colors.orange,
               padding: const EdgeInsets.symmetric(vertical: 15),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10)),
             ),
             onPressed: () {
+              //s
               Navigator.push(
                 context,
                 MaterialPageRoute(

@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../../../2_Assets/Colors/Colors_Scheme.dart';
+
 class PurchaseItemPage extends StatefulWidget {
   const PurchaseItemPage({super.key});
 
@@ -13,7 +15,7 @@ class PurchaseItemPage extends StatefulWidget {
 class _PurchaseItemPageState extends State<PurchaseItemPage> {
   final _formKey = GlobalKey<FormState>();
   DateTime? _selectedDate;
-
+//s
   @override
   void initState() {
     super.initState();
@@ -102,7 +104,7 @@ class _PurchaseItemPageState extends State<PurchaseItemPage> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: theme.primaryColor),
+          borderSide: BorderSide(color: AppColors.primaryColor),
         ),
       ),
       items: provider.items.map((item) {
@@ -121,7 +123,7 @@ class _PurchaseItemPageState extends State<PurchaseItemPage> {
       }).toList(),
       onChanged: (value) => provider.setSelectedItem(value!),
       validator: (value) => value == null ? 'Select an item' : null,
-      style: TextStyle(color: theme.primaryColor),
+      style: TextStyle(color: AppColors.primaryColor),
     );
   }
 
@@ -135,7 +137,7 @@ class _PurchaseItemPageState extends State<PurchaseItemPage> {
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: theme.primaryColor),
+          borderSide: BorderSide(color: AppColors.primaryColor),
         ),
       ),
       keyboardType: TextInputType.number,
@@ -152,7 +154,7 @@ class _PurchaseItemPageState extends State<PurchaseItemPage> {
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: theme.primaryColor),
+          borderSide: BorderSide(color: AppColors.primaryColor),
         ),
       ),
       keyboardType: TextInputType.number,
@@ -169,7 +171,7 @@ class _PurchaseItemPageState extends State<PurchaseItemPage> {
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: theme.primaryColor),
+          borderSide: BorderSide(color: AppColors.primaryColor),
         ),
       ),
       validator: (value) => value?.isEmpty ?? true ? 'Required field' : null,
@@ -185,7 +187,7 @@ class _PurchaseItemPageState extends State<PurchaseItemPage> {
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: theme.primaryColor),
+          borderSide: BorderSide(color: AppColors.primaryColor),
         ),
       ),
     );
@@ -201,7 +203,7 @@ class _PurchaseItemPageState extends State<PurchaseItemPage> {
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide(color: theme.primaryColor),
+            borderSide: BorderSide(color: AppColors.primaryColor),
           ),
         ),
         child: Row(
@@ -212,11 +214,11 @@ class _PurchaseItemPageState extends State<PurchaseItemPage> {
                   ? 'Select date'
                   : DateFormat('MMM dd, yyyy').format(_selectedDate!),
               style: TextStyle(
-                color: _selectedDate == null ? Colors.grey : theme.primaryColor,
+                color: _selectedDate == null ? Colors.grey : AppColors.primaryColor,
                 fontWeight: FontWeight.w500,
               ),
             ),
-            Icon(Icons.arrow_drop_down, color: theme.primaryColor),
+            Icon(Icons.arrow_drop_down, color: AppColors.primaryColor),
           ],
         ),
       ),
@@ -228,14 +230,14 @@ class _PurchaseItemPageState extends State<PurchaseItemPage> {
       icon: const Icon(Icons.save_alt, size: 24),
       label: const Text('SAVE PURCHASE', style: TextStyle(fontSize: 16)),
       style: ElevatedButton.styleFrom(
-        backgroundColor: theme.primaryColor,
+        backgroundColor: AppColors.primaryColor,
         foregroundColor: Colors.white,
         padding: const EdgeInsets.symmetric(vertical: 16),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
         ),
         elevation: 3,
-        shadowColor: theme.primaryColor.withOpacity(0.3),
+        shadowColor: AppColors.primaryColor.withOpacity(0.3),
       ),
       onPressed: () async {
         if (_formKey.currentState!.validate()) {

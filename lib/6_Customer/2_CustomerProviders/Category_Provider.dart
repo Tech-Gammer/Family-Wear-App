@@ -1,24 +1,3 @@
-// import 'package:flutter/material.dart';
-//
-// class Category {
-//   final String name;
-//   final String icon;
-//
-//   Category({required this.name, required this.icon});
-// }
-//
-// class CategoryProvider with ChangeNotifier {
-//   final List<Category> _categories = [
-//     Category(name: 'Rings', icon: 'asset/ring.jpg'),
-//     Category(name: 'Shoes', icon: 'asset/shoes.jpg'),
-//     Category(name: 'Watches', icon: 'asset/watch.jpg'),
-//     Category(name: 'Wallets', icon: 'asset/wallet.jpg'),
-//     Category(name: 'Glasses', icon: 'asset/glasses.jpg'),
-//     Category(name: 'Dress', icon: 'asset/dress.jpg'),
-//   ];
-//
-//   List<Category> get categories => _categories;
-// }
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
@@ -27,10 +6,12 @@ import 'package:http/http.dart' as http;
 import '../../ip_address.dart';
 
 class Category {
+  final int id;
   final String name;
   final Uint8List imageBytes;
 
-  Category({required this.name, required this.imageBytes});
+  Category({required this.name, required this.imageBytes,    required this.id,
+  });
 }
 
 class CategoryProvider with ChangeNotifier {
@@ -54,6 +35,7 @@ class CategoryProvider with ChangeNotifier {
         _categories = data.map((category) {
           final imageBytes = _decodeImage(category['category_picture']);
           return Category(
+            id: category['category_id'],
             name: category['category_name'],
             imageBytes: imageBytes ?? Uint8List(0), // Handle null images
           );

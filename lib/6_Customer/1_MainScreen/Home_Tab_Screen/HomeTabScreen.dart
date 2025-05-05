@@ -25,10 +25,12 @@
   class _HomeTabScreenState extends State<HomeTabScreen> {
     int? userId;
     late PageController _pageController;
+    final TextEditingController _searchController = TextEditingController();
 
     @override
     void initState() {
       super.initState();
+      _searchController.addListener(_onSearchChanged);
       _pageController = PageController(viewportFraction: 0.85);
 
       WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -52,18 +54,26 @@
 
         // Load other providers
         final categoryProvider = Provider.of<CategoryProvider>(context, listen: false);
+        await categoryProvider.fetchCategories();
         final showItemProvider = Provider.of<ShowItemProvider>(context, listen: false);
+        await showItemProvider.fetchItems(activeOnly: true);
         final itemProvider = Provider.of<ItemProvider>(context, listen: false);
-
+        if (userId != null) {
+          itemProvider.loadFavorites(userId.toString());
+        }
         // Schedule provider initializations in a separate frame to avoid UI blocking
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          categoryProvider.fetchCategories();
-          showItemProvider.fetchItems();
-          if (userId != null) {
-            itemProvider.loadFavorites(userId.toString());
-          }
-        });
+        // WidgetsBinding.instance.addPostFrameCallback((_) async{
+        //   categoryProvider.fetchCategories();
+        //   // showItemProvider.fetchItems();
+        //   await showItemProvider.fetchItems(activeOnly: true); // Add this parameter
+        //
+        // });
       });
+    }
+
+    void _onSearchChanged() {
+      Provider.of<ShowItemProvider>(context, listen: false)
+          .setSearchQuery(_searchController.text);
     }
 
     void _addToCart(BuildContext context, dynamic itemData) async {
@@ -176,7 +186,8 @@
       final items = Provider.of<ShowItemProvider>(context).items; // Add
       final userProvider = Provider.of<UserProvider>(context);
       final sliderProvider = Provider.of<ShowSliderProvider>(context);
-
+      final categoryProvider = Provider.of<CategoryProvider>(context);
+      final showItemProvider = Provider.of<ShowItemProvider>(context);
 
       double baseFontSize = 11;
       double responsiveFontSize = baseFontSize * (screenWidth / 375);
@@ -211,8 +222,8 @@
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    userProvider.name.isNotEmpty
-                                        ? userProvider.name
+                                    userProvider.userName.isNotEmpty
+                                        ? userProvider.userName
                                         : "Guest User",
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
@@ -230,19 +241,19 @@
                               ),
                             ],
                           ),
-                          Container(
-                            height: screenHeight * 0.05,
-                            width: screenHeight * 0.05,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: isDarkTheme ? AppColors.accentColor : AppColors.background,
-                            ),
-                            child: Icon(
-                              Icons.notifications,
-                              size: responsiveFontSize * 2,
-                              color: AppColors.primaryColor,
-                            ),
-                          ),
+                          // Container(
+                          //   height: screenHeight * 0.05,
+                          //   width: screenHeight * 0.05,
+                          //   decoration: BoxDecoration(
+                          //     shape: BoxShape.circle,
+                          //     color: isDarkTheme ? AppColors.accentColor : AppColors.background,
+                          //   ),
+                          //   child: Icon(
+                          //     Icons.notifications,
+                          //     size: responsiveFontSize * 2,
+                          //     color: AppColors.primaryColor,
+                          //   ),
+                          // ),
                         ],
                       );
                     },
@@ -274,6 +285,7 @@
                         ),
                         Expanded(
                           child: TextField(
+                            controller: _searchController,
                             onChanged: (value) => searchProvider.userStartedTyping(),
                             onTap: () => searchProvider.userStartedTyping(),
                             onEditingComplete: () => searchProvider.userStoppedTyping(),
@@ -384,7 +396,8 @@
                   GridView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    itemCount: items.length,
+                    // itemCount: items.length,
+                    itemCount: showItemProvider.items.length,
                     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
                       crossAxisSpacing: 16,
@@ -627,7 +640,8 @@
         double screenHeight,
         ShowSliderProvider sliderProvider,
         HorizontalScrollProvider scrollProvider
-        ) {
+        )
+    {
       if (sliderProvider.sliderImages.isEmpty) {
         return SizedBox(height: screenHeight * 0.2);
       }
@@ -742,129 +756,12 @@
     }
 
 
-    // Widget _buildImageSlider(
-    //     double screenHeight,
-    //     ShowSliderProvider sliderProvider,
-    //     HorizontalScrollProvider scrollProvider
-    //     ) {
-    //   return Column(
-    //     children: [
-    //       // Slider Container
-    //       SizedBox(
-    //         height: screenHeight * 0.2,
-    //         child: sliderProvider.isLoading
-    //             ? Center(child: CircularProgressIndicator())
-    //             : CarouselSlider(
-    //           options: CarouselOptions(
-    //             height: screenHeight * 0.2,
-    //             aspectRatio: 16 / 9,
-    //             viewportFraction: 0.85,
-    //             autoPlay: true,
-    //             // onPageChanged: (index, reason) {
-    //             //   scrollProvider.updatePage(index);
-    //             // },
-    //             onPageChanged: (index, _) => scrollProvider.updatePage(index),
-    //
-    //           ),
-    //           items: sliderProvider.sliderImages.map((image) {
-    //             // return Builder(
-    //             //   builder: (BuildContext context) {
-    //             //     return Container(
-    //             //       margin: EdgeInsets.symmetric(horizontal: 8.0),
-    //             //       decoration: BoxDecoration(
-    //             //         borderRadius: BorderRadius.circular(12),
-    //             //         image: DecorationImage(
-    //             //           //image: Image.memory(base64Decode(imageData["image"])),
-    //             //           image: MemoryImage(image['image_bytes']),
-    //             //           fit: BoxFit.cover,
-    //             //         ),
-    //             //       ),
-    //             //     );
-    //             //   },
-    //             // );
-    //             return Builder(
-    //               builder: (BuildContext context) {
-    //                 // Handle both formats of image data that might exist
-    //                 Widget imageWidget;
-    //
-    //                 if (image.containsKey('image_bytes') &&
-    //                     image['image_bytes'] is Uint8List &&
-    //                     (image['image_bytes'] as Uint8List).isNotEmpty) {
-    //                   // Use the pre-decoded bytes if available
-    //                   imageWidget = Image.memory(
-    //                     image['image_bytes'],
-    //                     fit: BoxFit.fill,
-    //                   );
-    //                 } else if (image.containsKey('image') &&
-    //                     image['image'] is String &&
-    //                     (image['image'] as String).isNotEmpty) {
-    //                   // Decode the base64 string on the fly
-    //                   try {
-    //                     final bytes = base64Decode(image['image']);
-    //                     imageWidget = Image.memory(
-    //                       bytes,
-    //                       fit: BoxFit.fill,
-    //                     );
-    //                   } catch (e) {
-    //                     // If decoding fails, show placeholder
-    //                     imageWidget = Container(
-    //                       color: Colors.grey[300],
-    //                       child: Icon(Icons.image_not_supported, size: 50),
-    //                     );
-    //                   }
-    //                 } else {
-    //                   // Fallback for missing image data
-    //                   imageWidget = Container(
-    //                     color: Colors.grey[300],
-    //                     child: Icon(Icons.image_not_supported, size: 50),
-    //                   );
-    //                 }
-    //
-    //                 return Container(
-    //                   margin: EdgeInsets.symmetric(horizontal: 8.0),
-    //                   decoration: BoxDecoration(
-    //                     borderRadius: BorderRadius.circular(12),
-    //                   ),
-    //                   child: ClipRRect(
-    //                     borderRadius: BorderRadius.circular(12),
-    //                     child: imageWidget,
-    //                   ),
-    //                 );
-    //               },
-    //             );
-    //           }).toList(),
-    //         ),
-    //       ),
-    //       SizedBox(height: screenHeight * 0.01),
-    //
-    //       // Dots Indicator
-    //       Row(
-    //         mainAxisAlignment: MainAxisAlignment.center,
-    //         children: List.generate(
-    //           sliderProvider.sliderImages.length,
-    //               (index) {
-    //             return AnimatedContainer(
-    //               duration: const Duration(milliseconds: 300),
-    //               margin: const EdgeInsets.symmetric(horizontal: 4.0),
-    //               height: 8,
-    //               width: scrollProvider.currentPage == index ? 16 : 8,
-    //               decoration: BoxDecoration(
-    //                 color: scrollProvider.currentPage == index
-    //                     ? AppColors.primaryColor
-    //                     : Colors.grey,
-    //                 borderRadius: BorderRadius.circular(4),
-    //               ),
-    //             );
-    //           },
-    //         ),
-    //       ),
-    //     ],
-    //   );
-    // }
 
     @override
     void dispose() {
       _pageController.dispose(); // Don't forget to dispose the controller
+      _searchController.removeListener(_onSearchChanged);
+      _searchController.dispose();
       super.dispose();
     }
   }

@@ -16,7 +16,8 @@ class _ShowItemPageState extends State<ShowItemPage> {
   void initState() {
     super.initState();
     final provider = Provider.of<ShowItemProvider>(context, listen: false);
-    provider.fetchItems();
+    // provider.fetchItems();
+    provider.fetchItems(activeOnly: true); // Add this parameter
     provider.fetchCategories();
     provider.fetchUnits();
   }
@@ -131,38 +132,7 @@ class _ShowItemPageState extends State<ShowItemPage> {
 
           // Item Grid
           Expanded(
-            child: /*provider.isLoading
-                ? Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  AppColors.primaryColor,
-                ),
-              ),
-            )
-                : provider.items.isEmpty
-                ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.inventory_2_outlined,
-                    size: 60,
-                    color: AppColors.primaryColor.withOpacity(0.5),
-                  ),
-                  SizedBox(height: 16),
-                  Text(
-                    "No items found",
-                    style: TextStyle(
-                      fontSize: titleFontSize,
-                      color: isDarkMode
-                          ? AppColors.lightTextColor.withOpacity(0.7)
-                          : AppColors.darkTextColor.withOpacity(0.7),
-                    ),
-                  ),
-                ],
-              ),
-            )
-                : */
+            child:
             GridView.builder(
               padding: EdgeInsets.all(8),
               itemCount: provider.items.length,
@@ -170,13 +140,14 @@ class _ShowItemPageState extends State<ShowItemPage> {
                 crossAxisCount: crossAxisCount,
                 crossAxisSpacing: 12,
                 mainAxisSpacing: 12,
-                childAspectRatio: 0.75,
+                childAspectRatio: 0.72,
               ),
               itemBuilder: (context, index) {
                 final item = provider.items[index];
                 final images = item['item_image'] as List<String>;
 
                 return GestureDetector(
+                    behavior: HitTestBehavior.opaque, // Add this line
                     onTap: () {
                       Navigator.push(
                         context,
@@ -185,7 +156,12 @@ class _ShowItemPageState extends State<ShowItemPage> {
                         ),
                       );
                     },
-                    onLongPress: () => _showItemOptions(context, item),
+                    // onLongPress: () => _showItemOptions(context, item),
+                    onLongPress: () {
+                      print("Long press detected"); // Debug print
+                      _showItemOptions(context, item);
+                    },
+
                     child: Container(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(4),
@@ -323,6 +299,30 @@ class _ShowItemPageState extends State<ShowItemPage> {
     );
   }
 
+  void _showInactiveAlert(BuildContext context, Map<String, dynamic> item) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text("Cannot Delete Item"),
+        content: Text("This item is referenced elsewhere. Mark as inactive instead?"),
+        actions: [
+          TextButton(
+            child: Text("Cancel"),
+            onPressed: () => Navigator.pop(ctx),
+          ),
+          TextButton(
+            child: Text("Mark Inactive"),
+            onPressed: () {
+              final provider = Provider.of<ShowItemProvider>(context, listen: false);
+              provider.updateItemStatus(item['item_id'], false);
+              Navigator.pop(ctx);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showItemOptions(BuildContext context, Map<String, dynamic> item) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
@@ -387,25 +387,40 @@ class _ShowItemPageState extends State<ShowItemPage> {
                   ),
                 );
 
+                // if (confirmed == true) {
+                //   final provider =
+                //   Provider.of<ShowItemProvider>(context, listen: false);
+                //   await provider.deleteItem(item['item_id']);
+                // }
                 if (confirmed == true) {
-                  final provider =
-                  Provider.of<ShowItemProvider>(context, listen: false);
-                  await provider.deleteItem(item['item_id']);
+                  try {
+                    final provider = Provider.of<ShowItemProvider>(context, listen: false);
+                    await provider.deleteItem(item['item_id']);
+                  } catch (e) {
+                    if (!mounted) return; // Check if widget is still in the tree
+                    if (e.toString().contains("referenced in other tables")) {
+                      _showInactiveAlert(context, item); // Show dialog for reference errors
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("Deletion failed: ${e.toString()}")),
+                      );
+                    }
+                  }
                 }
               },
             ),
-            Divider(height: 1),
-            ListTile(
-              leading: Icon(Icons.edit, color: AppColors.primaryColor),
-              title: Text(
-                'Edit Item',
-                style: TextStyle(color: AppColors.primaryColor),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                // Add your edit navigation logic here
-              },
-            ),
+            // Divider(height: 1),
+            // ListTile(
+            //   leading: Icon(Icons.edit, color: AppColors.primaryColor),
+            //   title: Text(
+            //     'Edit Item',
+            //     style: TextStyle(color: AppColors.primaryColor),
+            //   ),
+            //   onTap: () {
+            //     Navigator.pop(context);
+            //     // Add your edit navigation logic here
+            //   },
+            // ),
           ],
         ),
       ),

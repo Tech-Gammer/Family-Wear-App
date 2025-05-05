@@ -26,7 +26,9 @@ class AppThemes {
 
 class AppColors {
   // Common Colors
-  static const Color primaryColor = Color(0xFFFF4747); // Soft Red-Orange
+  // static const Color primaryColor = Color(0xFFFF4747); // Soft Red-Orange
+  static const Color primaryColor = Color(0xFF00B14F)
+  ; // Soft Red-Orange
   static const Color accentColor = Color(0xFF242424);  // Dark Gray
 
   // Light Theme Colors

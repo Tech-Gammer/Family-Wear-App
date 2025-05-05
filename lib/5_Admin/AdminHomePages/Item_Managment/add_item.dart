@@ -121,14 +121,14 @@ class _AddItemState extends State<AddItem> {
                 ),
                 Row(
                   children: [
-                    Expanded(child: buildTextField(label: "Minimum Quantity", controller: provider.minQuantityController, keyboardType: TextInputType.number, lines: 1)),
+                    Expanded(child: buildTextField(label: "Quantity", controller: provider.minQuantityController, keyboardType: TextInputType.number, lines: 1)),
                     SizedBox(width: 10),
                     Expanded(
                       flex: 1,
                       child: DropdownButtonFormField<String>(
                         value: provider.selectedUnit,
                         decoration: InputDecoration(
-                          labelText: "Quantity Unit",
+                          labelText: "Unit",
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),

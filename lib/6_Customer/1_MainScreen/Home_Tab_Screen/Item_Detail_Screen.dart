@@ -22,8 +22,7 @@ class ItemDetailScreen extends StatefulWidget {
 
 class _ItemDetailScreenState extends State<ItemDetailScreen> {
   int _currentImageIndex = 0;
-
-
+  bool? isActive;
 
   void _addToCart(BuildContext context, dynamic itemData) async {
     final cartProvider = Provider.of<CartProvider>(context, listen: false);
@@ -44,6 +43,7 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
     }
 
     final cartItem = CartItem(
+
       userId: userId,
       itemId: itemId,
       title: item['item_name']?.toString() ?? 'Unknown Item',

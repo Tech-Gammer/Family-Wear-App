@@ -15,6 +15,7 @@ import '../6_Customer/HomeScreen.dart';
 import '../raaf3.dart';
 import 'AdminHomePages/BugReportPages/reportbugspages.dart';
 import 'AdminHomePages/Item_Managment/Show_items.dart';
+import 'AdminHomePages/Item_Managment/inactiveitemPage.dart';
 import 'AdminHomePages/Item_Managment/item_Purchase.dart';
 import 'AdminHomePages/Item_Managment/purchaseList.dart';
 import 'AdminHomePages/Order_Managment/adminOrderList.dart';
@@ -193,6 +194,11 @@ class AdminHomeScreen extends StatelessWidget {
                       MaterialPageRoute(builder: (context) => ShowItemPage()))),
               buildListTile(
                   Icons.list,
+                  'Manage Inactive Items',
+                  () => Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => InactiveItemsPage()))),
+              buildListTile(
+                  Icons.list,
                   'Show Purchases',
                   () => Navigator.push(
                       context,
@@ -325,7 +331,7 @@ class AdminHomeScreen extends StatelessWidget {
           decoration: BoxDecoration(
             color: AppColors.primaryColor,
             image: DecorationImage(
-              image: AssetImage('asset/sufyan.jpg'),
+              image: AssetImage('asset/logo.PNG'),
               fit: BoxFit.cover,
               colorFilter: ColorFilter.mode(
                 Colors.black.withOpacity(0.2),
@@ -353,7 +359,7 @@ class AdminHomeScreen extends StatelessWidget {
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(30),
-                      child: Image.asset('asset/sufyan.jpg', fit: BoxFit.cover),
+                      child: Image.asset('asset/logo.PNG', fit: BoxFit.cover),
                     ),
                   ),
                   SizedBox(width: 15),

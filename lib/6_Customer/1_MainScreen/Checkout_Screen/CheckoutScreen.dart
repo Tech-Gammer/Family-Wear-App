@@ -237,19 +237,19 @@ class _CheckoutPageState extends State<CheckoutPage> {
               SizedBox(height: 8),
               Card(
                 child: ListTile(
-                  leading: CircleAvatar(
-                    radius: 30,
-                    backgroundImage: profileProvider.profileImageFile != null
-                        ? FileImage(profileProvider.profileImageFile!)
-                        : profileProvider.profileImageUrl != null
-                        ? NetworkImage(profileProvider.profileImageUrl!)
-                        : null,
-                    backgroundColor: Colors.grey[300],
-                    child: profileProvider.profileImageFile == null &&
-                        profileProvider.profileImageUrl == null
-                        ? const Icon(Icons.person, size: 30, color: Colors.red)
-                        : null,
-                  ),
+                  // leading: CircleAvatar(
+                  //   radius: 30,
+                  //   backgroundImage: profileProvider.profileImageFile != null
+                  //       ? FileImage(profileProvider.profileImageFile!)
+                  //       : profileProvider.profileImageUrl != null
+                  //       ? NetworkImage(profileProvider.profileImageUrl!)
+                  //       : null,
+                  //   backgroundColor: Colors.grey[300],
+                  //   child: profileProvider.profileImageFile == null &&
+                  //       profileProvider.profileImageUrl == null
+                  //       ? const Icon(Icons.person, size: 30, color: Colors.red)
+                  //       : null,
+                  // ),
                   title: Text(userProvider.name ?? 'No Name'),
                   subtitle: Text(userProvider.email ?? 'No Email'),
                 ),
@@ -302,16 +302,16 @@ class _CheckoutPageState extends State<CheckoutPage> {
                   });
                 },
               ),
-              RadioListTile<String>(
-                title: Text('Online Payment'),
-                value: 'Online Payment',
-                groupValue: _paymentMethod,
-                onChanged: (value) {
-                  setState(() {
-                    _paymentMethod = value!;
-                  });
-                },
-              ),
+              // RadioListTile<String>(
+              //   title: Text('Online Payment'),
+              //   value: 'Online Payment',
+              //   groupValue: _paymentMethod,
+              //   onChanged: (value) {
+              //     setState(() {
+              //       _paymentMethod = value!;
+              //     });
+              //   },
+              // ),
               SizedBox(height: 20),
               Text(
                 'Your Items',

@@ -8,7 +8,8 @@ import 'package:flutter/material.dart';
   import '../../../1_Auth/Intro/2_Create_Account_Page/register_page.dart';
   import '../../../1_Auth/Intro/Intro_Providers/Profile_Provider.dart';
   import '../../../2_Assets/Colors/Colors_Scheme.dart';
-  import '../../../5_Admin/1_AdminHomeScreen.dart';
+  import '../../../4_Provider/theme.dart';
+import '../../../5_Admin/1_AdminHomeScreen.dart';
   import '../../../7_Moderator/Moderator.dart';
   import '../../2_CustomerProviders/HomeTabScreen_Provider.dart';
   import '../OrdersScreens/OrdersListPage.dart';
@@ -228,6 +229,7 @@ import 'helpCenter.dart';
                   _buildSettingsItem(Icons.security, "Security", screenWidth,(){
                     Navigator.push(context, MaterialPageRoute(builder: (context)=>AppSecurityFeaturesPage()));
                   }),
+                  //_buildToggleItem(Icons.dark_mode, "Dark mode", screenWidth),
                   _buildToggleItem(Icons.dark_mode, "Dark mode", screenWidth),
                   Divider(),
                   const SizedBox(height: 5),
@@ -314,6 +316,7 @@ import 'helpCenter.dart';
       );
     }
 
+/*
     Widget _buildToggleItem(IconData icon, String title, double screenWidth) {
       return Container(
         margin: EdgeInsets.symmetric(vertical: 5),
@@ -327,6 +330,34 @@ import 'helpCenter.dart';
           value: false,
           onChanged: (bool value) {},
         ),
+      );
+    }
+*/
+
+    Widget _buildToggleItem(IconData icon, String title, double screenWidth) {
+      return Consumer<ThemeProvider>(
+        builder: (context, themeProvider, _) {
+          return Container(
+            margin: EdgeInsets.symmetric(vertical: 5),
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: SwitchListTile(
+              secondary: Icon(icon, size: screenWidth * 0.06),
+              title: Text(title,
+                style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: screenWidth * 0.04,
+                ),
+              ),
+              value: themeProvider.isDarkMode,
+              onChanged: (bool value) {
+                themeProvider.toggleTheme(value);
+              },
+            ),
+          );
+        },
       );
     }
   }

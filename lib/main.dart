@@ -54,6 +54,7 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (_) => UserProvider()),
         ChangeNotifierProvider<ThemeProvider>(create: (_) => ThemeProvider()),
         ChangeNotifierProvider<SplashProvider>(create: (_) => SplashProvider()),
         ChangeNotifierProvider<PageNotifier>(create: (_) => PageNotifier()),
@@ -101,7 +102,7 @@ class MyApp extends StatelessWidget {
       title: 'Family Wear',
       theme: AppThemes.lightTheme,
       darkTheme: AppThemes.darkTheme,
-      themeMode: themeProvider.themeMode,
+      themeMode: themeProvider.isDarkMode ? ThemeMode.dark : ThemeMode.light,
       debugShowCheckedModeBanner: false,
       home: isLoggedIn ? _getHomePageBasedOnRole(role) : FirstScreen(),
     );

@@ -6,6 +6,11 @@ import '../../ip_address.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class UserProvider with ChangeNotifier {
+
+  UserProvider(){
+    loadUserDataFromPrefs();
+  }
+
   int? _userId;
   String _userName = "";
   String _name = "";
