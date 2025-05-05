@@ -157,7 +157,6 @@ import 'helpCenter.dart';
       double screenHeight = MediaQuery.of(context).size.height;
       final theme = Theme.of(context);
       final isDarkTheme = theme.brightness == Brightness.dark;
-
       // Access user data from provider
       final userProvider = Provider.of<UserProvider>(context);
 
@@ -315,24 +314,6 @@ import 'helpCenter.dart';
         ),
       );
     }
-
-/*
-    Widget _buildToggleItem(IconData icon, String title, double screenWidth) {
-      return Container(
-        margin: EdgeInsets.symmetric(vertical: 5),
-        decoration: BoxDecoration(
-          color: Colors.grey.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: SwitchListTile(
-          secondary: Icon(icon, size: screenWidth * 0.06),
-          title: Text(title, style: TextStyle(fontWeight: FontWeight.w500, fontSize: screenWidth * 0.04)),
-          value: false,
-          onChanged: (bool value) {},
-        ),
-      );
-    }
-*/
 
     Widget _buildToggleItem(IconData icon, String title, double screenWidth) {
       return Consumer<ThemeProvider>(
