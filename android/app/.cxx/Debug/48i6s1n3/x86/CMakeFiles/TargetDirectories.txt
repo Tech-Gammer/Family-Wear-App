@@ -1,0 +1,2 @@
+C:/Users/umair/StudioProjects/Family-Wear-App/android/app/.cxx/Debug/48i6s1n3/x86/CMakeFiles/edit_cache.dir
+C:/Users/umair/StudioProjects/Family-Wear-App/android/app/.cxx/Debug/48i6s1n3/x86/CMakeFiles/rebuild_cache.dir
