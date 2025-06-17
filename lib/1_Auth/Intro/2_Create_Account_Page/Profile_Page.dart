@@ -62,35 +62,35 @@
                       SizedBox(height: screenHeight * 0.025),
             
                       // Profile Image Section
-                      Center(
-                        child: Stack(
-                          children: [
-                            CircleAvatar(
-                              radius: 60,
-                              backgroundImage: profileProvider.profileImageFile != null ? FileImage(profileProvider.profileImageFile!) : profileProvider.profileImageUrl != null ? NetworkImage(profileProvider.profileImageUrl!) : null,
-                              backgroundColor: Colors.grey[300],
-                              child: profileProvider.profileImageFile == null && profileProvider.profileImageUrl == null ? const Icon(Icons.person, size: 70, color: Colors.red) : null,
-                            ),
-                            Positioned(
-                              bottom: 5,
-                              right: 5,
-                              child: InkWell(
-                                onTap: () async {
-                                  await profileProvider.pickImage();
-                                  if (profileProvider.profileImageFile != null) {
-                                    await profileProvider.uploadImage();
-                                  }
-                                },
-                                child: CircleAvatar(
-                                  backgroundColor: Colors.red,
-                                  radius: 15,
-                                  child: const Icon(Icons.edit, size: 15, color: Colors.white),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                      // Center(
+                      //   child: Stack(
+                      //     children: [
+                      //       CircleAvatar(
+                      //         radius: 60,
+                      //         backgroundImage: profileProvider.profileImageFile != null ? FileImage(profileProvider.profileImageFile!) : profileProvider.profileImageUrl != null ? NetworkImage(profileProvider.profileImageUrl!) : null,
+                      //         backgroundColor: Colors.grey[300],
+                      //         child: profileProvider.profileImageFile == null && profileProvider.profileImageUrl == null ? const Icon(Icons.person, size: 70, color: Colors.red) : null,
+                      //       ),
+                      //       Positioned(
+                      //         bottom: 5,
+                      //         right: 5,
+                      //         child: InkWell(
+                      //           onTap: () async {
+                      //             await profileProvider.pickImage();
+                      //             if (profileProvider.profileImageFile != null) {
+                      //               await profileProvider.uploadImage();
+                      //             }
+                      //           },
+                      //           child: CircleAvatar(
+                      //             backgroundColor: Colors.red,
+                      //             radius: 15,
+                      //             child: const Icon(Icons.edit, size: 15, color: Colors.white),
+                      //           ),
+                      //         ),
+                      //       ),
+                      //     ],
+                      //   ),
+                      // ),
             
                       // Name TextField
                       _buildInputField(

@@ -222,8 +222,11 @@
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    userProvider.userName.isNotEmpty
-                                        ? userProvider.userName
+                                    // userProvider.userName.isNotEmpty
+                                    //     ? userProvider.userName
+                                    //     : "Guest User",
+                                    userProvider.name.isNotEmpty
+                                        ? userProvider.name
                                         : "Guest User",
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
