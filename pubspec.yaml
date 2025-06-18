@@ -55,6 +55,13 @@ dependencies:
   smooth_page_indicator:
   path_provider: ^2.1.5
   cached_network_image:
+  flutter_lints: any
+  flutter_stripe: any
+  flutter_dotenv: any
+  lottie: any
+  pdf: ^3.11.3
+  printing: ^5.14.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -94,6 +101,7 @@ flutter:
     - asset/
     - asset/intro/
     - asset/intro/whisList.png
+    - .env
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

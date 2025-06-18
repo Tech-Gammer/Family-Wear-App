@@ -20,12 +20,33 @@ import 'AdminHomePages/Item_Managment/item_Purchase.dart';
 import 'AdminHomePages/Item_Managment/purchaseList.dart';
 import 'AdminHomePages/Order_Managment/adminOrderList.dart';
 import 'AdminHomePages/Order_Managment/ordercancellation.dart';
+import 'AdminHomePages/Order_Managment/pendingorderprovider.dart';
+import 'AdminHomePages/Order_Managment/reportpage.dart';
 import 'AdminHomePages/Slider_Management/addSlider.dart';
 import 'AdminHomePages/Slider_Management/showSlider.dart';
 import 'AdminHomePages/Unit_Managment/show_unit.dart';
 import 'AdminHomePages/adminpages/usersListPage.dart';
 
-class AdminHomeScreen extends StatelessWidget {
+class AdminHomeScreen extends StatefulWidget {
+  const AdminHomeScreen({super.key});
+
+  @override
+  State<AdminHomeScreen> createState() => _AdminHomeScreenState();
+}
+
+class _AdminHomeScreenState extends State<AdminHomeScreen> {
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Fetch pending order count on load
+    Future.delayed(Duration.zero, () {
+      Provider.of<PendingOrdersProvider>(context, listen: false)
+          .fetchPendingOrdersCount();
+    });
+  }
+
   void _showLogoutDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -84,7 +105,7 @@ class AdminHomeScreen extends StatelessWidget {
                         context,
                         MaterialPageRoute(
                             builder: (context) => CreateAccountScreen()),
-                        (Route<dynamic> route) => false);
+                            (Route<dynamic> route) => false);
 
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
@@ -130,8 +151,50 @@ class AdminHomeScreen extends StatelessWidget {
       child: Scaffold(
         appBar: AppBar(
           title:
-              Text('Admin Home', style: TextStyle(fontWeight: FontWeight.bold)),
+          Text('Admin Home', style: TextStyle(fontWeight: FontWeight.bold)),
           centerTitle: true,
+          actions: [
+            Consumer<PendingOrdersProvider>(
+              builder: (context, pendingProvider, _) {
+                final count = pendingProvider.pendingCount;
+                return Stack(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.notifications),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => AdminOrdersScreen()),
+                        );
+                      },
+                    ),
+                    if (count > 0)
+                      Positioned(
+                        right: 6,
+                        top: 6,
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: const BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                          ),
+                          constraints: const BoxConstraints(minWidth: 20, minHeight: 20),
+                          child: Text(
+                            '$count',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                  ],
+                );
+              },
+            ),
+          ],
+
           //backgroundColor: AppColors.primaryColor,
         ),
         drawer: Drawer(
@@ -164,7 +227,7 @@ class AdminHomeScreen extends StatelessWidget {
               buildListTile(
                   Icons.dashboard,
                   'Dashboard',
-                  () => Navigator.push(
+                      () => Navigator.push(
                       context,
                       MaterialPageRoute(
                           builder: (context) => AdminHomeScreen()))),
@@ -178,29 +241,29 @@ class AdminHomeScreen extends StatelessWidget {
               buildListTile(
                   Icons.add,
                   'Add Item',
-                  () => Navigator.push(context,
+                      () => Navigator.push(context,
                       MaterialPageRoute(builder: (context) => AddItem()))),
               buildListTile(
                   Icons.add,
                   'Add Purchase',
-                  () => Navigator.push(
+                      () => Navigator.push(
                       context,
                       MaterialPageRoute(
                           builder: (context) => PurchaseItemPage()))),
               buildListTile(
                   Icons.list,
                   'Show Items',
-                  () => Navigator.push(context,
+                      () => Navigator.push(context,
                       MaterialPageRoute(builder: (context) => ShowItemPage()))),
               buildListTile(
                   Icons.list,
                   'Manage Inactive Items',
-                  () => Navigator.push(context,
+                      () => Navigator.push(context,
                       MaterialPageRoute(builder: (context) => InactiveItemsPage()))),
               buildListTile(
                   Icons.list,
                   'Show Purchases',
-                  () => Navigator.push(
+                      () => Navigator.push(
                       context,
                       MaterialPageRoute(
                           builder: (context) => PurchaseListPage()))),
@@ -208,12 +271,12 @@ class AdminHomeScreen extends StatelessWidget {
               buildListTile(
                   Icons.add,
                   'Add Category',
-                  () => Navigator.push(context,
+                      () => Navigator.push(context,
                       MaterialPageRoute(builder: (context) => AddCategory()))),
               buildListTile(
                   Icons.list,
                   'Show Categories',
-                  () => Navigator.push(
+                      () => Navigator.push(
                       context,
                       MaterialPageRoute(
                           builder: (context) => ShowCategories()))),
@@ -221,14 +284,14 @@ class AdminHomeScreen extends StatelessWidget {
               buildListTile(
                   Icons.add,
                   'Add Slider',
-                  () => Navigator.push(
+                      () => Navigator.push(
                       context,
                       MaterialPageRoute(
                           builder: (context) => UploadImageScreen()))),
               buildListTile(
                   Icons.list,
                   'Show Sliders',
-                  () => Navigator.push(
+                      () => Navigator.push(
                       context,
                       MaterialPageRoute(
                           builder: (context) => ShowSliderScreen()))),
@@ -236,12 +299,12 @@ class AdminHomeScreen extends StatelessWidget {
               buildListTile(
                   Icons.add,
                   'Add Units',
-                  () => Navigator.push(context,
+                      () => Navigator.push(context,
                       MaterialPageRoute(builder: (context) => AddUnitPage()))),
               buildListTile(
                   Icons.list,
                   'Show Units',
-                  () => Navigator.push(context,
+                      () => Navigator.push(context,
                       MaterialPageRoute(builder: (context) => ShowUnitPage()))),
               // buildSectionTitle('Notification Management'),
               // buildListTile(Icons.add, 'Add Notification', () {}),
@@ -250,7 +313,7 @@ class AdminHomeScreen extends StatelessWidget {
               buildListTile(
                   Icons.list,
                   'Go To Customer Side',
-                  () => Navigator.push(context,
+                      () => Navigator.push(context,
                       MaterialPageRoute(builder: (context) => HomeScreen()))),
               buildListTile(
                   Icons.exit_to_app, 'Logout', () => _showLogoutDialog(context),
@@ -268,42 +331,42 @@ class AdminHomeScreen extends StatelessWidget {
                 buildCard(
                     'Orders',
                     Icons.shopping_cart,
-                    () => Navigator.push(
+                        () => Navigator.push(
                         context,
                         MaterialPageRoute(
                             builder: (context) => AdminOrdersScreen()))),
                 buildCard(
                     'Products',
                     Icons.inventory,
-                    () => Navigator.push(
+                        () => Navigator.push(
                         context,
                         MaterialPageRoute(
                             builder: (context) => ShowItemPage()))),
                 buildCard(
                     'Categories',
                     Icons.category,
-                    () => Navigator.push(
+                        () => Navigator.push(
                         context,
                         MaterialPageRoute(
                             builder: (context) => ShowCategories()))),
                 buildCard(
                     'Sliders',
                     Icons.slideshow,
-                    () => Navigator.push(
+                        () => Navigator.push(
                         context,
                         MaterialPageRoute(
                             builder: (context) => ShowSliderScreen()))),
                 buildCard(
                     'Units',
                     Icons.widgets,
-                    () => Navigator.push(
+                        () => Navigator.push(
                         context,
                         MaterialPageRoute(
                             builder: (context) => ShowUnitPage()))),
                 buildCard(
                     'Cancellation Requests',
                     Icons.widgets,
-                    () => Navigator.push(
+                        () => Navigator.push(
                         context,
                         MaterialPageRoute(
                             builder: (context) =>
@@ -311,11 +374,21 @@ class AdminHomeScreen extends StatelessWidget {
                 buildCard(
                     'Users List',
                     Icons.widgets,
-                    () => Navigator.push(context,
+                        () => Navigator.push(context,
                         MaterialPageRoute(builder: (context) => AdminsPage()))),
                 buildCard('Bug Reports', Icons.notifications, (){
                   Navigator.push(context, MaterialPageRoute(builder: (context)=>AdminBugReportsPage()));
-                } ),
+                }
+                ),
+                buildCard(
+                  'Reports',
+                  Icons.bar_chart,
+                      () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const AdminReportsScreen()),
+                  ),
+                ),
+
               ],
             );
           },
@@ -424,3 +497,4 @@ class AdminHomeScreen extends StatelessWidget {
     );
   }
 }
+

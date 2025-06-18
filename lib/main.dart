@@ -8,6 +8,7 @@ import 'package:family_wear_app/5_Admin/AdminHomePages/Slider_Management/showSli
 import 'package:family_wear_app/6_Customer/2_CustomerProviders/HomeTabScreen_Provider.dart';
 import 'package:family_wear_app/raaf_Page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '2_Assets/Colors/Colors_Scheme.dart';
@@ -20,6 +21,7 @@ import '5_Admin/AdminHomePages/Category_Management/showCategory_Provider.dart';
 import '5_Admin/AdminHomePages/Item_Managment/ShowItem_Provider.dart';
 import '5_Admin/AdminHomePages/Item_Managment/Show_items.dart';
 import '5_Admin/AdminHomePages/Item_Managment/purchase_provider.dart';
+import '5_Admin/AdminHomePages/Order_Managment/pendingorderprovider.dart';
 import '5_Admin/AdminHomePages/Slider_Management/addSlider_Provider.dart';
 import '5_Admin/AdminHomePages/adminpages/usersListProvider.dart';
 import '6_Customer/1_MainScreen/Cart_Screen/Cart_provider.dart';
@@ -38,6 +40,10 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  // Initialize Stripe - Add your publishable key here
+  Stripe.publishableKey = "pk_test_51OD3ACBJHKRP32EvgnNMZ5aXKW69v0kMwUEolRC4axL4pRli8Qcaa9uPPc7A1A8kNbIQ5vhPEIg7XREWtZkuOgk7004j90qxTP"; // Replace with your actual publishable key
+  await Stripe.instance.applySettings();
 
   // Initialize SharedPreferences
   final prefs = await SharedPreferences.getInstance();
@@ -76,6 +82,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => AddSliderImageProvider()),
         ChangeNotifierProvider(create: (_) => ShowSliderProvider()),
         ChangeNotifierProvider(create: (_) => AllUserProvider()),
+        ChangeNotifierProvider(create: (_) => PendingOrdersProvider()),
         ChangeNotifierProvider<CartProvider>(create: (_) => cartProvider), // Inject preloaded provider
 
       ],
